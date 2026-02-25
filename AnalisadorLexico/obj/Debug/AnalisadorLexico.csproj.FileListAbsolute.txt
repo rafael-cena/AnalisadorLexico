@@ -1,0 +1,11 @@
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.exe.config
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.exe
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.pdb
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.AssemblyReference.cache
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.Form1.resources
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.Properties.Resources.resources
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.GenerateResource.cache
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.CoreCompileInputs.cache
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.pdb
+D:\UNOESTE\7° TERMO\CG\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe.config
