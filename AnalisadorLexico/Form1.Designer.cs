@@ -30,7 +30,7 @@
         {
             this.rtbEditor = new System.Windows.Forms.RichTextBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.pnNumbers = new System.Windows.Forms.Panel();
+            this.labelNome = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.arqMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.btSalvar = new System.Windows.Forms.ToolStripMenuItem();
@@ -38,11 +38,14 @@
             this.btCarregar = new System.Windows.Forms.ToolStripMenuItem();
             this.btLimpar = new System.Windows.Forms.ToolStripMenuItem();
             this.btExecutar = new System.Windows.Forms.ToolStripMenuItem();
+            this.pnNumbers = new System.Windows.Forms.Panel();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
-            this.labelNome = new System.Windows.Forms.Label();
+            this.pLogErro = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
+            this.pLogErro.SuspendLayout();
             this.SuspendLayout();
             // 
             // rtbEditor
@@ -55,7 +58,7 @@
             this.rtbEditor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.rtbEditor.ForeColor = System.Drawing.SystemColors.Control;
             this.rtbEditor.Location = new System.Drawing.Point(23, 28);
-            this.rtbEditor.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rtbEditor.Margin = new System.Windows.Forms.Padding(2);
             this.rtbEditor.Name = "rtbEditor";
             this.rtbEditor.Size = new System.Drawing.Size(578, 336);
             this.rtbEditor.TabIndex = 0;
@@ -70,20 +73,20 @@
             this.panel2.Controls.Add(this.menuStrip1);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 0);
-            this.panel2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel2.Margin = new System.Windows.Forms.Padding(2);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(600, 28);
             this.panel2.TabIndex = 2;
             // 
-            // pnNumbers
+            // labelNome
             // 
-            this.pnNumbers.BackColor = System.Drawing.SystemColors.ActiveBorder;
-            this.pnNumbers.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnNumbers.Location = new System.Drawing.Point(0, 28);
-            this.pnNumbers.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.pnNumbers.Name = "pnNumbers";
-            this.pnNumbers.Size = new System.Drawing.Size(26, 338);
-            this.pnNumbers.TabIndex = 0;
+            this.labelNome.AutoSize = true;
+            this.labelNome.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.labelNome.Location = new System.Drawing.Point(508, 5);
+            this.labelNome.Name = "labelNome";
+            this.labelNome.Size = new System.Drawing.Size(59, 13);
+            this.labelNome.TabIndex = 1;
+            this.labelNome.Text = "Sem Nome";
             // 
             // menuStrip1
             // 
@@ -110,28 +113,28 @@
             // btSalvar
             // 
             this.btSalvar.Name = "btSalvar";
-            this.btSalvar.Size = new System.Drawing.Size(180, 22);
+            this.btSalvar.Size = new System.Drawing.Size(141, 22);
             this.btSalvar.Text = "Salvar";
             this.btSalvar.Click += new System.EventHandler(this.btSalvar_Click);
             // 
             // btSalvarComo
             // 
             this.btSalvarComo.Name = "btSalvarComo";
-            this.btSalvarComo.Size = new System.Drawing.Size(180, 22);
+            this.btSalvarComo.Size = new System.Drawing.Size(141, 22);
             this.btSalvarComo.Text = "Salvar Como";
             this.btSalvarComo.Click += new System.EventHandler(this.btSalvarComo_Click);
             // 
             // btCarregar
             // 
             this.btCarregar.Name = "btCarregar";
-            this.btCarregar.Size = new System.Drawing.Size(180, 22);
+            this.btCarregar.Size = new System.Drawing.Size(141, 22);
             this.btCarregar.Text = "Carregar";
             this.btCarregar.Click += new System.EventHandler(this.btCarregar_Click);
             // 
             // btLimpar
             // 
             this.btLimpar.Name = "btLimpar";
-            this.btLimpar.Size = new System.Drawing.Size(180, 22);
+            this.btLimpar.Size = new System.Drawing.Size(141, 22);
             this.btLimpar.Text = "Limpar";
             this.btLimpar.Click += new System.EventHandler(this.btLimpar_Click);
             // 
@@ -142,19 +145,43 @@
             this.btExecutar.Text = "Executar";
             this.btExecutar.Click += new System.EventHandler(this.btExecutar_Click);
             // 
+            // pnNumbers
+            // 
+            this.pnNumbers.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.pnNumbers.Dock = System.Windows.Forms.DockStyle.Left;
+            this.pnNumbers.Location = new System.Drawing.Point(0, 28);
+            this.pnNumbers.Margin = new System.Windows.Forms.Padding(2);
+            this.pnNumbers.Name = "pnNumbers";
+            this.pnNumbers.Size = new System.Drawing.Size(26, 338);
+            this.pnNumbers.TabIndex = 0;
+            // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
             // 
-            // labelNome
+            // pLogErro
             // 
-            this.labelNome.AutoSize = true;
-            this.labelNome.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.labelNome.Location = new System.Drawing.Point(508, 5);
-            this.labelNome.Name = "labelNome";
-            this.labelNome.Size = new System.Drawing.Size(59, 13);
-            this.labelNome.TabIndex = 1;
-            this.labelNome.Text = "Sem Nome";
+            this.pLogErro.BackColor = System.Drawing.SystemColors.ActiveBorder;
+            this.pLogErro.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pLogErro.Controls.Add(this.label1);
+            this.pLogErro.Location = new System.Drawing.Point(0, 247);
+            this.pLogErro.Name = "pLogErro";
+            this.pLogErro.Size = new System.Drawing.Size(600, 119);
+            this.pLogErro.TabIndex = 3;
+            this.pLogErro.Visible = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.BackColor = System.Drawing.Color.Red;
+            this.label1.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.label1.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
+            this.label1.Location = new System.Drawing.Point(582, 4);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(12, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "x";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // Form1
             // 
@@ -162,17 +189,20 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Desktop;
             this.ClientSize = new System.Drawing.Size(600, 366);
+            this.Controls.Add(this.pLogErro);
             this.Controls.Add(this.pnNumbers);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.rtbEditor);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.pLogErro.ResumeLayout(false);
+            this.pLogErro.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -192,6 +222,8 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Label labelNome;
+        private System.Windows.Forms.Panel pLogErro;
+        private System.Windows.Forms.Label label1;
     }
 }
 

@@ -14,6 +14,7 @@ namespace AnalisadorLexico
     public partial class Form1 : Form
     {
         int index = 1;
+        int linhaLogErro = 8;
 
         public Form1()
         {
@@ -109,6 +110,20 @@ namespace AnalisadorLexico
             verificaBlocoPrincipal();
         }
 
+        private void criarLogErro (String mensagem, int linhaErro, int colunaErro)
+        {
+            Label label = new Label();
+
+            label.Text = "Erro (" + colunaErro + ", " + linhaErro + "): " + mensagem;
+            label.Location = new Point(8, linhaLogErro); // Posição dentro do Panel
+            label.AutoSize = true; // Ajusta o tamanho ao texto
+            label.Name = "labelErro"+linhaLogErro/16;
+            linhaLogErro += 16;
+
+            pLogErro.Visible = true;
+            pLogErro.Controls.Add(label);
+        }
+
         private bool verificaBlocoPrincipal()
         {
             string codigo = rtbEditor.Text;
@@ -121,6 +136,9 @@ namespace AnalisadorLexico
             }
             if (palavraLida != "BLOCO")
             {
+                // criarLogErro(mensagem: string, linhaErro: int, colErro: int)
+                criarLogErro("Erro de Gramática: 'BLOCO' deve ser utilizado para iniciar um programa!", 1, 1);
+                criarLogErro("Erro de Gramática: 'BLOCO' deve ser utilizado para iniciar um programa!", 1, 1);
                 return false;
             }
             pos++;
@@ -153,6 +171,11 @@ namespace AnalisadorLexico
                 return false;
             }
             return true;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            pLogErro.Visible = false;
         }
     }
 }
