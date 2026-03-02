@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,104 @@ namespace AnalisadorLexico
                     pos.Y
                 );
             }
+        }
+
+        private void btSalvar_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btSalvarComo_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
+
+            // Configure dialog properties
+            saveFileDialog1.InitialDirectory = @"C:\";
+            saveFileDialog1.Title = "Save Text File";
+            saveFileDialog1.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            saveFileDialog1.FilterIndex = 2;
+            saveFileDialog1.FileName = labelNome.Text;
+            saveFileDialog1.RestoreDirectory = true;
+            saveFileDialog1.DefaultExt = "txt";
+
+            // Show dialog and check result
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                // Save file using the selected path
+                File.WriteAllText(saveFileDialog1.FileName, rtbEditor.Text);
+            }
+        }
+
+        private void btCarregar_Click(object sender, EventArgs e)
+        {
+            string selectedFilePath = "";
+            OpenFileDialog openFileDialog1 = new OpenFileDialog();
+            openFileDialog1.InitialDirectory = @"C:\";
+            openFileDialog1.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                selectedFilePath = openFileDialog1.FileName;
+                string content = File.ReadAllText(selectedFilePath);
+                rtbEditor.Text = content;
+            }
+        }
+
+        private void btLimpar_Click(object sender, EventArgs e)
+        {
+            rtbEditor.Clear();
+        }
+
+        private void btExecutar_Click(object sender, EventArgs e)
+        {
+            verificaBlocoPrincipal();
+        }
+
+        private bool verificaBlocoPrincipal()
+        {
+            string codigo = rtbEditor.Text;
+            string palavraLida = "";
+            int pos = 0;
+            while (pos < codigo.Length && codigo[pos] != ' ')
+            {
+                palavraLida += codigo[pos];
+                pos++;
+            }
+            if (palavraLida != "BLOCO")
+            {
+                return false;
+            }
+            pos++;
+            palavraLida = "";
+            while (pos < codigo.Length && codigo[pos] != '.')
+            {
+                palavraLida += codigo[pos];
+                pos++;
+            }
+            labelNome.Text = palavraLida;
+            pos++;
+            palavraLida = "";
+            while (pos < codigo.Length && codigo[pos] != '{')
+            {
+                palavraLida += codigo[pos];
+                pos++;
+            }
+            if (pos >= codigo.Length)
+            {
+                return false;
+            }
+            pos++;
+            while (pos < codigo.Length && codigo[pos] != '}')
+            {
+                palavraLida += codigo[pos];
+                pos++;
+            }
+            if (pos >= codigo.Length)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }
