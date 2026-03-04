@@ -42,7 +42,7 @@
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.pLogErro = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
+            this.btFechar = new System.Windows.Forms.Button();
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.pLogErro.SuspendLayout();
@@ -113,28 +113,28 @@
             // btSalvar
             // 
             this.btSalvar.Name = "btSalvar";
-            this.btSalvar.Size = new System.Drawing.Size(141, 22);
+            this.btSalvar.Size = new System.Drawing.Size(180, 22);
             this.btSalvar.Text = "Salvar";
             this.btSalvar.Click += new System.EventHandler(this.btSalvar_Click);
             // 
             // btSalvarComo
             // 
             this.btSalvarComo.Name = "btSalvarComo";
-            this.btSalvarComo.Size = new System.Drawing.Size(141, 22);
+            this.btSalvarComo.Size = new System.Drawing.Size(180, 22);
             this.btSalvarComo.Text = "Salvar Como";
             this.btSalvarComo.Click += new System.EventHandler(this.btSalvarComo_Click);
             // 
             // btCarregar
             // 
             this.btCarregar.Name = "btCarregar";
-            this.btCarregar.Size = new System.Drawing.Size(141, 22);
+            this.btCarregar.Size = new System.Drawing.Size(180, 22);
             this.btCarregar.Text = "Carregar";
             this.btCarregar.Click += new System.EventHandler(this.btCarregar_Click);
             // 
             // btLimpar
             // 
             this.btLimpar.Name = "btLimpar";
-            this.btLimpar.Size = new System.Drawing.Size(141, 22);
+            this.btLimpar.Size = new System.Drawing.Size(180, 22);
             this.btLimpar.Text = "Limpar";
             this.btLimpar.Click += new System.EventHandler(this.btLimpar_Click);
             // 
@@ -163,25 +163,24 @@
             // 
             this.pLogErro.BackColor = System.Drawing.SystemColors.ActiveBorder;
             this.pLogErro.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pLogErro.Controls.Add(this.label1);
+            this.pLogErro.Controls.Add(this.btFechar);
             this.pLogErro.Location = new System.Drawing.Point(0, 247);
             this.pLogErro.Name = "pLogErro";
             this.pLogErro.Size = new System.Drawing.Size(600, 119);
             this.pLogErro.TabIndex = 3;
             this.pLogErro.Visible = false;
             // 
-            // label1
+            // btFechar
             // 
-            this.label1.AutoSize = true;
-            this.label1.BackColor = System.Drawing.Color.Red;
-            this.label1.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.label1.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.label1.Location = new System.Drawing.Point(582, 4);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(12, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "x";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
+            this.btFechar.BackColor = System.Drawing.Color.Red;
+            this.btFechar.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.btFechar.Location = new System.Drawing.Point(572, 3);
+            this.btFechar.Name = "btFechar";
+            this.btFechar.Size = new System.Drawing.Size(23, 23);
+            this.btFechar.TabIndex = 1;
+            this.btFechar.Text = "x";
+            this.btFechar.UseVisualStyleBackColor = false;
+            this.btFechar.Click += new System.EventHandler(this.btFechar_Click);
             // 
             // Form1
             // 
@@ -202,7 +201,6 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.pLogErro.ResumeLayout(false);
-            this.pLogErro.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -223,7 +221,7 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Label labelNome;
         private System.Windows.Forms.Panel pLogErro;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button btFechar;
     }
 }
 

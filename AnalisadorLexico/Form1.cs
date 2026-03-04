@@ -33,6 +33,102 @@ namespace AnalisadorLexico
             pnNumbers.BackColor = Color.LightGray;
         }
 
+        public enum TipoToken {
+            BLOCO,
+            IDENTIFICADOR,
+            PONTO,
+            ABRE_CHAVE,
+            FECHA_CHAVE,
+            EOF
+        }
+
+        public class Token
+        {
+            public TipoToken Tipo{ get; set; }
+            public string Lexema { get; set; }
+            public int Linha { get; set; }
+            public int Coluna { get; set; }
+
+            public Token(TipoToken tipo, string lexema, int linha, int coluna)
+            {
+                Tipo = tipo;
+                Lexema = lexema;
+                Linha = linha;
+                Coluna = coluna;
+            }
+        }
+        public class Lexer
+        {
+            private string codigo;
+            private int pos = 0;
+            private int linha = 1;
+            private int coluna = 1;
+
+            public Lexer(string codigoFonte)
+            {
+                codigo = codigoFonte;
+            }
+
+            public List<Token> Analisar()
+            {
+                List<Token> tokens = new List<Token>();
+
+                while (pos < codigo.Length)
+                {
+                    char atual = codigo[pos];
+
+                    if (char.IsWhiteSpace(atual))
+                    {
+                        if (atual == '\n')
+                        {
+                            linha++;
+                            coluna = 1;
+                        }
+                        else
+                            coluna++;          
+                    }
+                    if (char.IsLetter(atual))
+                    {
+                        string lexema = "";
+                        int colInicio = coluna;
+
+                        while (pos < codigo.Length && (char.IsLetterOrDigit(codigo[pos]) || codigo[pos] == '_'))
+                        {
+                            lexema += codigo[pos];
+                            pos++;
+                            coluna++;
+                        }
+
+                        if (lexema == "BLOCO")
+                            tokens.Add(new Token(TipoToken.BLOCO, lexema, linha, colInicio));
+                        else
+                        {
+                            tokens.Add(new Token(TipoToken.IDENTIFICADOR, lexema, linha, colInicio));
+                            pos--;
+                        }
+                    }
+                    switch (atual)
+                    {
+                        case '.':
+                            tokens.Add(new Token(TipoToken.PONTO, ".", linha, coluna));
+                            break;
+
+                        case '{':
+                            tokens.Add(new Token(TipoToken.ABRE_CHAVE, "{", linha, coluna));
+                            break;
+
+                        case '}':
+                            tokens.Add(new Token(TipoToken.FECHA_CHAVE, "}", linha, coluna));
+                            break;
+                    }
+                    pos++;
+                    coluna++;
+                }
+                tokens.Add(new Token(TipoToken.EOF, "", linha, coluna));
+                return tokens;
+            }
+        }
+
         private void richTextBox1_TextChanged(object sender, EventArgs e)
         {
 
@@ -107,6 +203,7 @@ namespace AnalisadorLexico
 
         private void btExecutar_Click(object sender, EventArgs e)
         {
+            btFechar_Click(null, null);
             verificaBlocoPrincipal();
         }
 
@@ -126,56 +223,60 @@ namespace AnalisadorLexico
 
         private bool verificaBlocoPrincipal()
         {
-            string codigo = rtbEditor.Text;
-            string palavraLida = "";
-            int pos = 0;
-            while (pos < codigo.Length && codigo[pos] != ' ')
+            Lexer lexer = new Lexer(rtbEditor.Text);
+            List<Token> tokens = lexer.Analisar();
+            int quantTokens = tokens.Count;
+            int i = 0;
+
+            if (tokens[i].Tipo != TipoToken.BLOCO)
             {
-                palavraLida += codigo[pos];
-                pos++;
-            }
-            if (palavraLida != "BLOCO")
-            {
-                // criarLogErro(mensagem: string, linhaErro: int, colErro: int)
-                criarLogErro("Erro de Gramática: 'BLOCO' deve ser utilizado para iniciar um programa!", 1, 1);
-                criarLogErro("Erro de Gramática: 'BLOCO' deve ser utilizado para iniciar um programa!", 1, 1);
+                criarLogErro("Esperado 'BLOCO'", tokens[i].Linha, tokens[i].Coluna);
                 return false;
             }
-            pos++;
-            palavraLida = "";
-            while (pos < codigo.Length && codigo[pos] != '.')
+            i++;
+            if (tokens[i].Tipo != TipoToken.IDENTIFICADOR)
             {
-                palavraLida += codigo[pos];
-                pos++;
-            }
-            labelNome.Text = palavraLida;
-            pos++;
-            palavraLida = "";
-            while (pos < codigo.Length && codigo[pos] != '{')
-            {
-                palavraLida += codigo[pos];
-                pos++;
-            }
-            if (pos >= codigo.Length)
-            {
+                criarLogErro("Esperado identificador após BLOCO", tokens[i].Linha, tokens[i].Coluna);
                 return false;
             }
-            pos++;
-            while (pos < codigo.Length && codigo[pos] != '}')
+            labelNome.Text = tokens[i].Lexema;
+            i++;
+            if (tokens[i].Tipo != TipoToken.PONTO)
             {
-                palavraLida += codigo[pos];
-                pos++;
+                criarLogErro("Esperado '.' após identificador", tokens[i].Linha, tokens[i].Coluna);
+                return false;
             }
-            if (pos >= codigo.Length)
+            i++;
+            if (tokens[i].Tipo != TipoToken.ABRE_CHAVE)
             {
+                criarLogErro("Esperado '{'", tokens[i].Linha, tokens[i].Coluna);
+                return false;
+            }
+            i++;
+            if (tokens[i].Tipo != TipoToken.FECHA_CHAVE)
+            {
+                criarLogErro("Esperado '}'", tokens[i].Linha, tokens[i].Coluna);
+                return false;
+            }
+            if (tokens[quantTokens-1].Tipo != TipoToken.EOF)
+            {
+                criarLogErro("Esperado 'EOF'", tokens[quantTokens-1].Linha, tokens[quantTokens-1].Coluna);
                 return false;
             }
             return true;
         }
 
-        private void label1_Click(object sender, EventArgs e)
+        private void btFechar_Click(object sender, EventArgs e)
         {
             pLogErro.Visible = false;
+            linhaLogErro = 8;
+            for (int i = pLogErro.Controls.Count - 1; i > 0; i --)
+                if (pLogErro.Controls[i] is Label)
+                {
+                    var l = pLogErro.Controls[i];
+                    pLogErro.Controls.Remove(l);
+                    l.Dispose();
+                }
         }
     }
 }
