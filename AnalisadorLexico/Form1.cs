@@ -34,11 +34,17 @@ namespace AnalisadorLexico
         }
 
         public enum TipoToken {
-            BLOCO,
-            IDENTIFICADOR,
-            PONTO,
             ABRE_CHAVE,
+            BLOCO,
+            DOIS_PONTOS,
             FECHA_CHAVE,
+            IDENTIFICADOR_NOME,
+            IDENTIFICADOR_TIPO,
+            IGUAL,
+            PONTO,
+            PONTO_VIRGULA,
+            VAR,
+            VIRGULA,
             EOF
         }
 
@@ -87,7 +93,7 @@ namespace AnalisadorLexico
                         else
                             coluna++;          
                     }
-                    if (char.IsLetter(atual))
+                    if (char.IsLetterOrDigit(atual))
                     {
                         string lexema = "";
                         int colInicio = coluna;
@@ -103,7 +109,21 @@ namespace AnalisadorLexico
                             tokens.Add(new Token(TipoToken.BLOCO, lexema, linha, colInicio));
                         else
                         {
-                            tokens.Add(new Token(TipoToken.IDENTIFICADOR, lexema, linha, colInicio));
+                            if(lexema=="VAR")
+                            {
+                                tokens.Add(new Token(TipoToken.VAR, lexema, linha, colInicio));
+                            }
+                            else
+                            {
+                                if(lexema=="int"||lexema == "float"||lexema == "bool"|| lexema == "String"||lexema == "char"||lexema == "void")
+                                {
+                                    tokens.Add(new Token(TipoToken.IDENTIFICADOR_TIPO, lexema, linha, colInicio));
+                                }
+                                else
+                                {
+                                    tokens.Add(new Token(TipoToken.IDENTIFICADOR_NOME, lexema, linha, colInicio));
+                                }
+                            }
                             pos--;
                         }
                     }
@@ -119,6 +139,22 @@ namespace AnalisadorLexico
 
                         case '}':
                             tokens.Add(new Token(TipoToken.FECHA_CHAVE, "}", linha, coluna));
+                            break;
+                        
+                        case ':':
+                            tokens.Add(new Token(TipoToken.DOIS_PONTOS, ":", linha, coluna));
+                            break;
+
+                        case ';':
+                            tokens.Add(new Token(TipoToken.PONTO_VIRGULA, ":", linha, coluna));
+                            break;
+
+                        case '=':
+                            tokens.Add(new Token(TipoToken.IGUAL, "=", linha, coluna));
+                            break;
+
+                        case ',':
+                            tokens.Add(new Token(TipoToken.VIRGULA, ",", linha, coluna));
                             break;
                     }
                     pos++;
@@ -204,7 +240,7 @@ namespace AnalisadorLexico
         private void btExecutar_Click(object sender, EventArgs e)
         {
             btFechar_Click(null, null);
-            verificaBlocoPrincipal();
+            verificaBloco();
         }
 
         private void criarLogErro (String mensagem, int linhaErro, int colunaErro)
@@ -221,22 +257,23 @@ namespace AnalisadorLexico
             pLogErro.Controls.Add(label);
         }
 
-        private bool verificaBlocoPrincipal()
+        private bool verificaBloco()
         {
             Lexer lexer = new Lexer(rtbEditor.Text);
             List<Token> tokens = lexer.Analisar();
             int quantTokens = tokens.Count;
             int i = 0;
 
+            //VERIFIÇÃO BLOCO INICIAL
             if (tokens[i].Tipo != TipoToken.BLOCO)
             {
                 criarLogErro("Esperado 'BLOCO'", tokens[i].Linha, tokens[i].Coluna);
                 return false;
             }
             i++;
-            if (tokens[i].Tipo != TipoToken.IDENTIFICADOR)
+            if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
             {
-                criarLogErro("Esperado identificador após BLOCO", tokens[i].Linha, tokens[i].Coluna);
+                criarLogErro("Esperado identificador de nome após BLOCO", tokens[i].Linha, tokens[i].Coluna);
                 return false;
             }
             labelNome.Text = tokens[i].Lexema;
@@ -253,6 +290,65 @@ namespace AnalisadorLexico
                 return false;
             }
             i++;
+            //VERIFICAÇÃO DO QUE POSSIVELMENTE ESTA DENTRO DO BLOCO CASO NAO TENHA NADA PROCURA POR }
+            if(tokens[i].Tipo == TipoToken.VAR)
+            {
+                i++;
+                if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_TIPO)
+                {
+                    criarLogErro("Esperado identificador do tipo da variavel após VAR", tokens[i].Linha, tokens[i].Coluna);
+                    return false;
+                }
+                i++;
+                if (tokens[i].Tipo != TipoToken.DOIS_PONTOS)
+                {
+                    criarLogErro("Esperado ':' apos identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
+                    return false;
+                }
+                i++;
+                if(tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
+                {
+                    criarLogErro("Esperado identificador de nome apos ':'", tokens[i].Linha, tokens[i].Coluna);
+                    return false;
+                }
+                i++;
+                if (tokens[i].Tipo == TipoToken.IGUAL)
+                {
+                    i++;
+                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//VALOR DA VARIAVEL
+                    {
+                        criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
+                        return false;
+                    }
+                    i++;
+                }
+                while (tokens[i].Tipo == TipoToken.VIRGULA)
+                {
+                    i++;
+                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//NOME DA VARIAVEL
+                    {
+                        criarLogErro("Esperado identificador após ','", tokens[i].Linha, tokens[i].Coluna);
+                        return false;
+                    }
+                    i++;
+                    if (tokens[i].Tipo == TipoToken.IGUAL)
+                    {
+                        i++;
+                        if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
+                        {
+                            criarLogErro("Esperado valor de inicialização", tokens[i].Linha, tokens[i].Coluna);
+                            return false;
+                        }
+                        i++;
+                    }
+                }
+                if (tokens[i].Tipo != TipoToken.PONTO_VIRGULA)
+                {
+                    criarLogErro("Esperado ';' no fim da linha", tokens[i].Linha, tokens[i].Coluna);
+                    return false;
+                }
+                i++;
+            }
             if (tokens[i].Tipo != TipoToken.FECHA_CHAVE)
             {
                 criarLogErro("Esperado '}'", tokens[i].Linha, tokens[i].Coluna);
@@ -263,6 +359,8 @@ namespace AnalisadorLexico
                 criarLogErro("Esperado 'EOF'", tokens[quantTokens-1].Linha, tokens[quantTokens-1].Coluna);
                 return false;
             }
+            //FIM DA VERIFICAÇÃO
+
             return true;
         }
 

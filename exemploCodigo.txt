@@ -1,0 +1,4 @@
+BLOCO Teste.
+{
+   VAR int : x = 1, var2 = 30;
+}
