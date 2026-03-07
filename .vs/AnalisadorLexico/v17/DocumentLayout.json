@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\Compilador\\",
+  "WorkspaceRootPath": "D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|D:\\Compilador\\analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|d:\\unoeste\\7\u00B0 termo\\c\\analisadorlexico\\analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|solutionrelative:analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|d:\\compilador\\analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{C7F0F22E-B62B-4C03-8DB4-5B43939E8DA5}|AnalisadorLexico\\AnalisadorLexico.csproj|solutionrelative:analisadorlexico\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     }
   ],
@@ -18,24 +18,20 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{b1e99781-ab81-11d0-b683-00aa00a3ee26}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "Form1.cs [Design]",
-              "DocumentMoniker": "D:\\Compilador\\AnalisadorLexico\\Form1.cs",
+              "DocumentMoniker": "D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\AnalisadorLexico\\Form1.cs",
               "RelativeDocumentMoniker": "AnalisadorLexico\\Form1.cs",
-              "ToolTip": "D:\\Compilador\\AnalisadorLexico\\Form1.cs [Design]",
-              "RelativeToolTip": "AnalisadorLexico\\Form1.cs [Design]",
+              "ToolTip": "D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\AnalisadorLexico\\Form1.cs [Design]*",
+              "RelativeToolTip": "AnalisadorLexico\\Form1.cs [Design]*",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-25T17:45:18.638Z",
               "EditorCaption": " [Design]"
@@ -44,11 +40,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Form1.cs",
-              "DocumentMoniker": "D:\\Compilador\\AnalisadorLexico\\Form1.cs",
+              "DocumentMoniker": "D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\AnalisadorLexico\\Form1.cs",
               "RelativeDocumentMoniker": "AnalisadorLexico\\Form1.cs",
-              "ToolTip": "D:\\Compilador\\AnalisadorLexico\\Form1.cs",
-              "RelativeToolTip": "AnalisadorLexico\\Form1.cs",
-              "ViewState": "AgIAAOkAAAAAAAAAAAAAABMAAAAJAAAAAAAAAA==",
+              "ToolTip": "D:\\UNOESTE\\7\u00B0 TERMO\\C\\AnalisadorLexico\\AnalisadorLexico\\Form1.cs*",
+              "RelativeToolTip": "AnalisadorLexico\\Form1.cs*",
+              "ViewState": "AgIAAPsAAAAAAAAAAAAkwA8BAAAtAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-02-25T17:54:48.013Z",
               "EditorCaption": ""

@@ -257,6 +257,22 @@ namespace AnalisadorLexico
             pLogErro.Controls.Add(label);
         }
 
+        private void verificarSucesso ()
+        {
+            if (!pLogErro.Visible)
+            {
+                Label label = new Label();
+
+                label.Text = "Código compilado sem erros!";
+                label.Location = new Point(8, 8);
+                label.AutoSize = true;
+                label.Name = "labelSucesso";
+
+                pLogErro.Visible = true;
+                pLogErro.Controls.Add(label);
+            }
+        }
+
         private bool verificaBloco()
         {
             Lexer lexer = new Lexer(rtbEditor.Text);
@@ -360,6 +376,7 @@ namespace AnalisadorLexico
                 return false;
             }
             //FIM DA VERIFICAÇÃO
+            verificarSucesso();
 
             return true;
         }
