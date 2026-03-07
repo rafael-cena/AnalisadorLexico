@@ -234,7 +234,10 @@ namespace AnalisadorLexico
 
         private void btLimpar_Click(object sender, EventArgs e)
         {
+            // limpar o editor de texto
             rtbEditor.Clear();
+            // limpar log de erros
+            btFechar_Click(null, null);
         }
 
         private void btExecutar_Click(object sender, EventArgs e)
@@ -365,10 +368,46 @@ namespace AnalisadorLexico
                 }
                 i++;
             }
+            //VERIFICAÇÂO DE USO DE 'IDENTIFICADOR_TIPO' SEM "VAR" ANTES
+            if (tokens[i].Tipo == TipoToken.IDENTIFICADOR_TIPO)
+            {
+                criarLogErro("Esperado 'VAR' antes do identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
+                i++;
+                if (tokens[i].Tipo != TipoToken.DOIS_PONTOS)
+                    criarLogErro("Esperado ':' apos identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
+                else i++;
+                if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
+                    criarLogErro("Esperado identificador de nome apos ':'", tokens[i].Linha, tokens[i].Coluna);
+                else i++;
+                if (tokens[i].Tipo == TipoToken.IGUAL)
+                {
+                    i++;
+                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//VALOR DA VARIAVEL
+                        criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
+                    else i++;
+                }
+                while (tokens[i].Tipo == TipoToken.VIRGULA)
+                {
+                    i++;
+                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//NOME DA VARIAVEL
+                        criarLogErro("Esperado identificador após ','", tokens[i].Linha, tokens[i].Coluna);
+                    else i++;
+                    if (tokens[i].Tipo == TipoToken.IGUAL)
+                    {
+                        i++;
+                        if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//VALOR DA VARIAVEL
+                            criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
+                        else i++;
+                    }
+                }
+                if (tokens[i].Tipo != TipoToken.PONTO_VIRGULA)
+                    criarLogErro("Esperado ';' no fim da linha", tokens[i].Linha, tokens[i].Coluna);
+                else i++;
+            }
             if (tokens[i].Tipo != TipoToken.FECHA_CHAVE)
             {
                 criarLogErro("Esperado '}'", tokens[i].Linha, tokens[i].Coluna);
-                return false;
+                //return false;
             }
             if (tokens[quantTokens-1].Tipo != TipoToken.EOF)
             {
