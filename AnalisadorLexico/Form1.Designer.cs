@@ -98,7 +98,7 @@
             this.btExecutar});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 30);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -164,14 +164,15 @@
             // 
             // pLogErro
             // 
+            this.pLogErro.AutoScroll = true;
             this.pLogErro.BackColor = System.Drawing.SystemColors.ActiveBorder;
             this.pLogErro.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pLogErro.Controls.Add(this.btFechar);
             this.pLogErro.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pLogErro.Location = new System.Drawing.Point(35, 304);
-            this.pLogErro.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pLogErro.Location = new System.Drawing.Point(35, 283);
+            this.pLogErro.Margin = new System.Windows.Forms.Padding(4);
             this.pLogErro.Name = "pLogErro";
-            this.pLogErro.Size = new System.Drawing.Size(765, 146);
+            this.pLogErro.Size = new System.Drawing.Size(765, 167);
             this.pLogErro.TabIndex = 3;
             this.pLogErro.Visible = false;
             // 

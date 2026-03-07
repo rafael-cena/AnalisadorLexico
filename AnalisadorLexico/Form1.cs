@@ -458,7 +458,7 @@ namespace AnalisadorLexico
             pLogErro.Controls.Add(label);
         }
 
-        private void verificarSucesso ()
+        private void verificarSucesso(List<Token> tokens)
         {
             if (!pLogErro.Visible)
             {
@@ -468,9 +468,31 @@ namespace AnalisadorLexico
                 label.Location = new Point(8, 8);
                 label.AutoSize = true;
                 label.Name = "labelSucesso";
+                linhaLogErro += 16;
+                pLogErro.Controls.Add(label);
+
+                Label lHead = new Label();
+                lHead.Text = "Lexema  |  Categoria  |  Linha  |  Coluna";
+                lHead.Location = new Point(8, linhaLogErro);
+                lHead.AutoSize = true;
+                lHead.Name = "labelHead";
+                lHead.Font = new Font(lHead.Font, FontStyle.Bold);
+                linhaLogErro += 16;
+                pLogErro.Controls.Add(lHead);
+
+                for (int i = 0; i < tokens.Count; i++, linhaLogErro += 16)
+                {
+                    Label l = new Label();
+
+                    l.Text = tokens[i].Lexema + "  |  " + tokens[i].Tipo + "  |  " + tokens[i].Linha + "  |  " + tokens[i].Coluna;
+                    l.Location = new Point(8, linhaLogErro); // Posição dentro do Panel
+                    l.AutoSize = true; // Ajusta o tamanho ao texto
+                    l.Name = "lRelReconhecimento" + linhaLogErro / 16;
+
+                    pLogErro.Controls.Add(l);
+                }
 
                 pLogErro.Visible = true;
-                pLogErro.Controls.Add(label);
             }
         }
 
@@ -612,7 +634,7 @@ namespace AnalisadorLexico
                 return false;
             }
             //FIM DA VERIFICAÇÃO
-            verificarSucesso();
+            verificarSucesso(tokens);
 
             return true;
         }
