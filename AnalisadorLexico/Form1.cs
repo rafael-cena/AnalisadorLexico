@@ -207,10 +207,12 @@ namespace AnalisadorLexico
 
                         while (pos < codigo.Length && char.IsDigit(codigo[pos]))
                         {
+                            atual = codigo[pos];
                             numero += atual;
                             pos++;
                             coluna++;
                         }
+                        atual = codigo[pos];
                         if (atual == '.')
                         {
                             numero += '.';
@@ -219,6 +221,7 @@ namespace AnalisadorLexico
 
                             while (pos < codigo.Length && char.IsDigit(codigo[pos]))
                             {
+                                atual = codigo[pos];
                                 numero += atual;
                                 pos++;
                                 coluna++;
