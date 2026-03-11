@@ -557,6 +557,7 @@ namespace AnalisadorLexico
                 if (!Aceitar(tipo))
                 {
                     erros.Add(new ErroLexico(mensagem,Atual().Linha,Atual().Coluna));
+                    Avancar();
                 }
             }
 
@@ -598,7 +599,8 @@ namespace AnalisadorLexico
                 while (Atual().Tipo == TipoToken.PONTO_VIRGULA)
                 {
                     Avancar();
-                    Statement();
+                    if(Atual().Tipo != TipoToken.FECHA_CHAVE)
+                        Statement();
                 }
             }
 
@@ -615,7 +617,6 @@ namespace AnalisadorLexico
                     else
                     {
                         erros.Add(new ErroLexico("Statement inválido",Atual().Linha,Atual().Coluna));
-                        Avancar();
                     }
                 }
             }
@@ -630,10 +631,10 @@ namespace AnalisadorLexico
                 {
                     ParametroVar();
                 }
+
                 else
                 {
                     erros.Add(new ErroLexico("Statement simples invalido", Atual().Linha, Atual().Coluna));
-                    Avancar();
                 }
             }
 

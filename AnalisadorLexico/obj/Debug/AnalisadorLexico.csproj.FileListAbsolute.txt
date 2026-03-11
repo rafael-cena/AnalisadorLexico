@@ -73,3 +73,5 @@ C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.Generat
 C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.CoreCompileInputs.cache
 C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe
 C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.pdb
+D:\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.SuggestedBindingRedirects.cache
+D:\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe.config
