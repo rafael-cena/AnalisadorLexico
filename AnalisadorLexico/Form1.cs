@@ -444,7 +444,24 @@ namespace AnalisadorLexico
                 }
             }
             else
-                verificaBloco(tokens);
+            {
+                Parser parser = new Parser(tokens);
+                parser.Parse();
+
+                // verifica erros sintaticos
+                if (parser.erros.Count > 0)
+                {
+                    foreach (var erro in parser.erros)
+                    {
+                        criarLogErro(erro.Mensagem, erro.Linha, erro.Coluna);
+                    }
+                }
+                else
+                {
+                    // se não houver erros, mostra sucesso e lista de tokens
+                    verificarSucesso(tokens);
+                }
+            }
         }
 
         private void criarLogErro (String mensagem, int linhaErro, int colunaErro)
@@ -499,147 +516,176 @@ namespace AnalisadorLexico
             }
         }
 
-        private bool verificaBloco(List<Token> tokens)
+        public class Parser
         {
+            private List<Token> tokens;
+            private int pos = 0;
 
-            int quantTokens = tokens.Count;
-            int i = 0;
+            public List<ErroLexico> erros = new List<ErroLexico>();
 
-            //VERIFIÇÃO BLOCO INICIAL
-            if (tokens[i].Tipo != TipoToken.BLOCO)
+            public Parser(List<Token> tokensEntrada)
             {
-                criarLogErro("Esperado 'BLOCO'", tokens[i].Linha, tokens[i].Coluna);
-                return false;
+                tokens = tokensEntrada;
             }
-            i++;
-            if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
-            {
-                criarLogErro("Esperado identificador de nome após BLOCO", tokens[i].Linha, tokens[i].Coluna);
-                return false;
-            }
-            labelNome.Text = tokens[i].Lexema;
-            i++;
-            if (tokens[i].Tipo != TipoToken.PONTO)
-            {
-                criarLogErro("Esperado '.' após identificador", tokens[i].Linha, tokens[i].Coluna);
-                return false;
-            }
-            i++;
-            if (tokens[i].Tipo != TipoToken.ABRE_CHAVE)
-            {
-                criarLogErro("Esperado '{'", tokens[i].Linha, tokens[i].Coluna);
-                return false;
-            }
-            i++;
-            //VERIFICAÇÃO DO QUE POSSIVELMENTE ESTA DENTRO DO BLOCO CASO NAO TENHA NADA PROCURA POR }
-            if(tokens[i].Tipo == TipoToken.VAR)
-            {
-                i++;
-                if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_TIPO)
-                {
-                    criarLogErro("Esperado identificador do tipo da variavel após VAR", tokens[i].Linha, tokens[i].Coluna);
-                    return false;
-                }
-                i++;
-                if (tokens[i].Tipo != TipoToken.DOIS_PONTOS)
-                {
-                    criarLogErro("Esperado ':' apos identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
-                    return false;
-                }
-                i++;
-                if(tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
-                {
-                    criarLogErro("Esperado identificador de nome apos ':'", tokens[i].Linha, tokens[i].Coluna);
-                    return false;
-                }
-                i++;
-                if (tokens[i].Tipo == TipoToken.IGUAL)
-                {
-                    i++;
-                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME && tokens[i].Tipo != TipoToken.NUMERO && tokens[i].Tipo != TipoToken.STRING && tokens[i].Tipo != TipoToken.BOOLEANO)//VALOR DA VARIAVEL
-                    {
-                        criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
-                        return false;
-                    }
-                    i++;
-                }
-                while (tokens[i].Tipo == TipoToken.VIRGULA)
-                {
-                    i++;
-                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//NOME DA VARIAVEL
-                    {
-                        criarLogErro("Esperado identificador após ','", tokens[i].Linha, tokens[i].Coluna);
-                        return false;
-                    }
-                    i++;
-                    if (tokens[i].Tipo == TipoToken.IGUAL)
-                    {
-                        i++;
-                        if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME && tokens[i].Tipo != TipoToken.NUMERO && tokens[i].Tipo != TipoToken.STRING && tokens[i].Tipo != TipoToken.BOOLEANO)
-                        {
-                            criarLogErro("Esperado valor de inicialização", tokens[i].Linha, tokens[i].Coluna);
-                            return false;
-                        }
-                        i++;
-                    }
-                }
-                if (tokens[i].Tipo != TipoToken.PONTO_VIRGULA)
-                {
-                    criarLogErro("Esperado ';' no fim da linha", tokens[i].Linha, tokens[i].Coluna);
-                    return false;
-                }
-                i++;
-            }
-            //VERIFICAÇÂO DE USO DE 'IDENTIFICADOR_TIPO' SEM "VAR" ANTES
-            if (tokens[i].Tipo == TipoToken.IDENTIFICADOR_TIPO)
-            {
-                criarLogErro("Esperado 'VAR' antes do identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
-                i++;
-                if (tokens[i].Tipo != TipoToken.DOIS_PONTOS)
-                    criarLogErro("Esperado ':' apos identificador do tipo da variavel", tokens[i].Linha, tokens[i].Coluna);
-                else i++;
-                if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)
-                    criarLogErro("Esperado identificador de nome apos ':'", tokens[i].Linha, tokens[i].Coluna);
-                else i++;
-                if (tokens[i].Tipo == TipoToken.IGUAL)
-                {
-                    i++;
-                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME && tokens[i].Tipo != TipoToken.NUMERO && tokens[i].Tipo != TipoToken.STRING && tokens[i].Tipo != TipoToken.BOOLEANO)//VALOR DA VARIAVEL
-                        criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
-                    else i++;
-                }
-                while (tokens[i].Tipo == TipoToken.VIRGULA)
-                {
-                    i++;
-                    if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME)//NOME DA VARIAVEL
-                        criarLogErro("Esperado identificador após ','", tokens[i].Linha, tokens[i].Coluna);
-                    else i++;
-                    if (tokens[i].Tipo == TipoToken.IGUAL)
-                    {
-                        i++;
-                        if (tokens[i].Tipo != TipoToken.IDENTIFICADOR_NOME && tokens[i].Tipo != TipoToken.NUMERO && tokens[i].Tipo != TipoToken.STRING && tokens[i].Tipo != TipoToken.BOOLEANO)//VALOR DA VARIAVEL
-                            criarLogErro("Esperado valor da variavel apos '='", tokens[i].Linha, tokens[i].Coluna);
-                        else i++;
-                    }
-                }
-                if (tokens[i].Tipo != TipoToken.PONTO_VIRGULA)
-                    criarLogErro("Esperado ';' no fim da linha", tokens[i].Linha, tokens[i].Coluna);
-                else i++;
-            }
-            if (tokens[i].Tipo != TipoToken.FECHA_CHAVE)
-            {
-                criarLogErro("Esperado '}'", tokens[i].Linha, tokens[i].Coluna);
-                //return false;
-            }
-            if (tokens[quantTokens-1].Tipo != TipoToken.EOF)
-            {
-                criarLogErro("Esperado 'EOF'", tokens[quantTokens-1].Linha, tokens[quantTokens-1].Coluna);
-                return false;
-            }
-            //FIM DA VERIFICAÇÃO
-            verificarSucesso(tokens);
 
-            return true;
+            private Token Atual()
+            {
+                if (pos >= tokens.Count)
+                    return tokens[tokens.Count - 1];
+
+                return tokens[pos];
+            }
+
+            private void Avancar()
+            {
+                if (pos < tokens.Count)
+                    pos++;
+            }
+
+            private bool Aceitar(TipoToken tipo)
+            {
+                if (Atual().Tipo == tipo)
+                {
+                    Avancar();
+                    return true;
+                }
+                return false;
+            }
+
+            private void Esperar(TipoToken tipo, string mensagem)
+            {
+                if (!Aceitar(tipo))
+                {
+                    erros.Add(new ErroLexico(mensagem,Atual().Linha,Atual().Coluna));
+                }
+            }
+
+            // S = bloco_principal
+            public void Parse()
+            {
+                BlocoPrincipal();
+            }
+
+            private void BlocoPrincipal()
+            {
+                Esperar(TipoToken.BLOCO, "Esperado BLOCO");
+
+                Esperar(TipoToken.IDENTIFICADOR_NOME,
+                    "Esperado identificador do bloco");
+
+                Esperar(TipoToken.PONTO,
+                    "Esperado '.'");
+
+                BlocoStatement();
+            }
+
+            private void BlocoStatement()
+            {
+                Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
+
+                SequenciaStatement();
+
+                if (Atual().Tipo == TipoToken.RETURN)
+                    StatementReturn();
+
+                Esperar(TipoToken.FECHA_CHAVE, "Esperado '}'");
+            }
+
+            private void SequenciaStatement()
+            {
+                Statement();
+
+                while (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                {
+                    Avancar();
+                    Statement();
+                }
+            }
+
+            private void Statement()
+            {
+                if (Atual().Tipo == TipoToken.VAR)
+                {
+                    BlocoIdentificadorVariavel();
+                }
+                else
+                {
+                    if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                        StatementSimples();
+                    else
+                    {
+                        erros.Add(new ErroLexico("Statement inválido",Atual().Linha,Atual().Coluna));
+                        Avancar();
+                    }
+                }
+            }
+
+            private void StatementSimples()
+            {
+                Esperar(TipoToken.IDENTIFICADOR_NOME,
+                    "Esperado identificador");
+
+                //atribuição de variavel
+                if (Aceitar(TipoToken.IGUAL))
+                {
+                    ParametroVar();
+                }
+                else
+                {
+                    erros.Add(new ErroLexico("Statement simples invalido", Atual().Linha, Atual().Coluna));
+                    Avancar();
+                }
+            }
+
+            private void StatementReturn()
+            {
+                Esperar(TipoToken.RETURN,"Esperado RETURN");
+                ParametroVar();
+            }
+
+            // BLOCO_IDENTIFICADOR_VARIAVEL
+            private void BlocoIdentificadorVariavel()
+            {
+                Esperar(TipoToken.VAR,"Esperado VAR");
+
+                Esperar(TipoToken.IDENTIFICADOR_TIPO,"Esperado tipo da variável");
+
+                Esperar(TipoToken.DOIS_PONTOS,"Esperado ':' após tipo");
+
+                ListaVar();
+            }
+
+            private void ListaVar()
+            {
+                VarItem();
+
+                while (Aceitar(TipoToken.VIRGULA))
+                {
+                    VarItem();
+                }
+            }
+
+            private void VarItem()
+            {
+                Esperar(TipoToken.IDENTIFICADOR_NOME,"Esperado nome da variável");
+
+                if (Aceitar(TipoToken.IGUAL))
+                {
+                    ParametroVar();
+                }
+            }
+
+            private void ParametroVar()
+            {
+                if (Atual().Tipo == TipoToken.NUMERO ||Atual().Tipo == TipoToken.STRING ||Atual().Tipo == TipoToken.BOOLEANO ||Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                {
+                    Avancar();
+                }
+                else
+                {
+                    erros.Add(new ErroLexico("Esperado valor",Atual().Linha,Atual().Coluna));
+                }
+            }
         }
 
         private void btFechar_Click(object sender, EventArgs e)
