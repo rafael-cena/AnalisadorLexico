@@ -98,7 +98,7 @@
             this.btExecutar});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(800, 30);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -110,41 +110,41 @@
             this.btCarregar,
             this.btLimpar});
             this.arqMenu.Name = "arqMenu";
-            this.arqMenu.Size = new System.Drawing.Size(75, 24);
+            this.arqMenu.Size = new System.Drawing.Size(75, 26);
             this.arqMenu.Text = "Arquivo";
             // 
             // btSalvar
             // 
             this.btSalvar.Name = "btSalvar";
-            this.btSalvar.Size = new System.Drawing.Size(176, 26);
+            this.btSalvar.Size = new System.Drawing.Size(224, 26);
             this.btSalvar.Text = "Salvar";
             this.btSalvar.Click += new System.EventHandler(this.btSalvar_Click);
             // 
             // btSalvarComo
             // 
             this.btSalvarComo.Name = "btSalvarComo";
-            this.btSalvarComo.Size = new System.Drawing.Size(176, 26);
+            this.btSalvarComo.Size = new System.Drawing.Size(224, 26);
             this.btSalvarComo.Text = "Salvar Como";
             this.btSalvarComo.Click += new System.EventHandler(this.btSalvarComo_Click);
             // 
             // btCarregar
             // 
             this.btCarregar.Name = "btCarregar";
-            this.btCarregar.Size = new System.Drawing.Size(176, 26);
+            this.btCarregar.Size = new System.Drawing.Size(224, 26);
             this.btCarregar.Text = "Carregar";
             this.btCarregar.Click += new System.EventHandler(this.btCarregar_Click);
             // 
             // btLimpar
             // 
             this.btLimpar.Name = "btLimpar";
-            this.btLimpar.Size = new System.Drawing.Size(176, 26);
+            this.btLimpar.Size = new System.Drawing.Size(224, 26);
             this.btLimpar.Text = "Limpar";
             this.btLimpar.Click += new System.EventHandler(this.btLimpar_Click);
             // 
             // btExecutar
             // 
             this.btExecutar.Name = "btExecutar";
-            this.btExecutar.Size = new System.Drawing.Size(79, 24);
+            this.btExecutar.Size = new System.Drawing.Size(79, 26);
             this.btExecutar.Text = "Executar";
             this.btExecutar.Click += new System.EventHandler(this.btExecutar_Click);
             // 
@@ -186,7 +186,7 @@
             this.btFechar.Name = "btFechar";
             this.btFechar.Size = new System.Drawing.Size(31, 28);
             this.btFechar.TabIndex = 1;
-            this.btFechar.Text = "x";
+            this.btFechar.Text = "X";
             this.btFechar.UseVisualStyleBackColor = false;
             this.btFechar.Click += new System.EventHandler(this.btFechar_Click);
             // 
