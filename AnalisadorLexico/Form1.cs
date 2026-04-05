@@ -523,6 +523,9 @@ namespace AnalisadorLexico
 
             public List<ErroLexico> erros = new List<ErroLexico>();
 
+            // controla se já está em pânico para evitar vários erros em cascata
+            private bool emPanico = false;
+
             public Parser(List<Token> tokensEntrada)
             {
                 tokens = tokensEntrada;
@@ -547,130 +550,191 @@ namespace AnalisadorLexico
                 if (Atual().Tipo == tipo)
                 {
                     Avancar();
+                    emPanico = false; // se conseguiu casar token, sai do pânico
                     return true;
                 }
                 return false;
+            }
+
+            // MODO PÂNICO
+            private bool EhTokenSincronizacao(TipoToken tipo)
+            {
+                return tipo == TipoToken.VAR ||
+                       tipo == TipoToken.IDENTIFICADOR_NOME ||
+                       tipo == TipoToken.IDENTIFICADOR_TIPO ||
+                       tipo == TipoToken.IF ||
+                       tipo == TipoToken.WHILE ||
+                       tipo == TipoToken.FOR ||
+                       tipo == TipoToken.RETURN ||
+                       tipo == TipoToken.ABRE_CHAVE ||
+                       tipo == TipoToken.FECHA_CHAVE ||
+                       tipo == TipoToken.ABRE_PARENTESE||
+                       tipo == TipoToken.FECHA_PARENTESE||
+                       tipo == TipoToken.PONTO_VIRGULA ||
+                       tipo == TipoToken.EOF;
+            }
+
+            private void Sincronizar()
+            {
+                while (Atual().Tipo != TipoToken.EOF && !EhTokenSincronizacao(Atual().Tipo))
+                {
+                    Avancar();
+                }
+                emPanico = false;
+            }
+
+            private void RegistrarErro(string mensagem)
+            {
+                if (!emPanico)
+                {
+                    erros.Add(new ErroLexico(mensagem, Atual().Linha, Atual().Coluna));
+                    emPanico = true;
+                }
             }
 
             private void Esperar(TipoToken tipo, string mensagem)
             {
                 if (!Aceitar(tipo))
                 {
-                    erros.Add(new ErroLexico(mensagem,Atual().Linha,Atual().Coluna));
-                    Avancar();
+                    RegistrarErro(mensagem);
+                    Sincronizar();
                 }
             }
 
-            // S = bloco_principal
+            private bool EstaNoInicioDeStatement(TipoToken tipo)
+            {
+                return tipo == TipoToken.VAR ||
+                       tipo == TipoToken.IDENTIFICADOR_NOME ||
+                       tipo == TipoToken.IDENTIFICADOR_TIPO ||
+                       tipo == TipoToken.IF ||
+                       tipo == TipoToken.WHILE ||
+                       tipo == TipoToken.FOR;
+            }
 
+            // S = bloco_principal
             public void Parse()
             {
                 BlocoPrincipal();
+
+                if (Atual().Tipo != TipoToken.EOF)
+                {
+                    RegistrarErro("Tokens após o fim do bloco principal");
+                    Sincronizar();
+                }
             }
 
-            //atribuicao_var = "=" parametro_var ";"
+            // atribuicao_var = "=" parametro_var ";"
             private void AtribuicaoVar()
             {
                 Esperar(TipoToken.IGUAL, "Esperado '=' para iniciar a atribuição");
 
-                ParametroVar();
+                if (!emPanico)
+                    ParametroVar();
 
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' ao final da atribuição");
             }
 
-            //bloco_identificador_variavel = “VAR” identificador_tipo ":" lista_var ";"
+            // bloco_identificador_variavel = “VAR” identificador_tipo ":" lista_var ";"
             private void BlocoIdentificadorVariavel()
             {
                 Esperar(TipoToken.VAR, "Esperado VAR");
 
-                Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo da variável");
+                if (!emPanico)
+                    Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo da variável");
 
-                Esperar(TipoToken.DOIS_PONTOS, "Esperado ':' após tipo");
+                if (!emPanico)
+                    Esperar(TipoToken.DOIS_PONTOS, "Esperado ':' após tipo");
 
-                ListaVar();
+                if (!emPanico)
+                    ListaVar();
+
+                Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' ao final da declaração de variável");
             }
 
-            //bloco_principal = "BLOCO" identificador_nomes”.” bloco_statement
+            // bloco_principal = "BLOCO" identificador_nomes "." bloco_statement
             private void BlocoPrincipal()
             {
                 Esperar(TipoToken.BLOCO, "Esperado BLOCO");
 
-                Esperar(TipoToken.IDENTIFICADOR_NOME,
-                    "Esperado identificador do bloco");
+                if (!emPanico)
+                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador do bloco");
 
-                Esperar(TipoToken.PONTO,
-                    "Esperado '.'");
+                if (!emPanico)
+                    Esperar(TipoToken.PONTO, "Esperado '.'");
 
-                BlocoStatement();
+                if (!emPanico)
+                    BlocoStatement();
             }
 
-            //bloco_statement = "{" sequencia_statement [statement_return] "}"
+            // bloco_statement = "{" sequencia_statement [statement_return] "}"
             private void BlocoStatement()
             {
                 Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
 
-                SequenciaStatement();
+                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
+                    SequenciaStatement();
 
-                if (Atual().Tipo == TipoToken.RETURN)
+                if (!emPanico && Atual().Tipo == TipoToken.RETURN)
                     StatementReturn();
 
                 Esperar(TipoToken.FECHA_CHAVE, "Esperado '}'");
             }
 
-
-            //Booleano e caracteres definidos em Analisar()
-
-            //chamada_funcao = "(" [lista_param_funcao] ")" ";"
+            // chamada_funcao = "(" [lista_param_funcao] ")" ";"
             private void ChamadaFuncao()
             {
                 Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' para iniciar chamada");
 
-                if (Atual().Tipo != TipoToken.FECHA_PARENTESE)
+                if (!emPanico && Atual().Tipo != TipoToken.FECHA_PARENTESE)
                 {
                     ListaParamFuncao();
                 }
+
+                Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' para fechar chamada de função");
+                Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após chamada de função");
             }
 
-            //declaracao = bloco_identificador_variavel
+            // declaracao = bloco_identificador_variavel
             private void Declaracao()
             {
                 BlocoIdentificadorVariavel();
             }
 
-            //declaracao_funcao=identificador_tipo identificador_nomes"(" [lista_param_funcao]")"bloco_statement
+            // declaracao_funcao = identificador_tipo identificador_nomes "(" [lista_param_funcao] ")" bloco_statement
             private void DeclaracaoFuncao()
             {
                 Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo de retorno da função");
-                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da função");
+                if (!emPanico)
+                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da função");
 
-                // "(" [lista_param_funcao] ")"
-                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após o nome da função");
+                if (!emPanico)
+                    Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após o nome da função");
 
-                if (Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
+                if (!emPanico && Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
                 {
                     ListaParamFuncao();
                 }
 
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após os parâmetros");
 
-                BlocoStatement();
+                if (!emPanico)
+                    BlocoStatement();
             }
 
-            // dígito já definido em Analisar()
-
-            //expressao = expressao_simples [operador_relacional expressao_simples].
+            // expressao = expressao_simples [operador_relacional expressao_simples]
             private void Expressao()
             {
                 ExpressaoSimples();
 
-                if (IsOperadorRelacional(Atual().Tipo))
+                if (!emPanico && IsOperadorRelacional(Atual().Tipo))
                 {
                     OperadorRelacional();
-                    ExpressaoSimples();
+                    if (!emPanico)
+                        ExpressaoSimples();
                 }
             }
 
-            //expressao_simples = ["-"] termo {operador_aditivo termo}
+            // expressao_simples = ["-"] termo {operador_aditivo termo}
             private void ExpressaoSimples()
             {
                 if (Atual().Tipo == TipoToken.MENOS)
@@ -680,19 +744,18 @@ namespace AnalisadorLexico
 
                 Termo();
 
-                while (Atual().Tipo == TipoToken.MAIS ||
-                       Atual().Tipo == TipoToken.MENOS ||
-                       Atual().Tipo == TipoToken.OR)
+                while (!emPanico && (Atual().Tipo == TipoToken.MAIS || Atual().Tipo == TipoToken.MENOS || Atual().Tipo == TipoToken.OR))
                 {
                     OperadorAditivo();
-                    Termo();
+                    if (!emPanico)
+                        Termo();
                 }
             }
 
-            //fator = digito | numero | identificador_nomes | "(" expressao ")"
+            // fator = numero | identificador_nomes | "(" expressao ")"
             private void Fator()
             {
-                if (Atual().Tipo == TipoToken.NUMERO)
+                if (Atual().Tipo == TipoToken.NUMERO || Atual().Tipo == TipoToken.STRING || Atual().Tipo == TipoToken.BOOLEANO)
                 {
                     Avancar();
                 }
@@ -707,73 +770,66 @@ namespace AnalisadorLexico
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Esperado um valor ou '('", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Esperado um valor, identificador ou '('");
+                    Sincronizar();
                 }
             }
 
-            // identificador_nomes identificador_tipo já definidos no enumerador TipoToken
-            // letra já definidas em Analisar()
-
-            //lista_param_funcao = identificador_tipo identificador_nomes {"," identificador_tipo identificador_nomes}
+            // lista_param_funcao = identificador_tipo identificador_nomes {"," identificador_tipo identificador_nomes}
             private void ListaParamFuncao()
             {
                 Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo do parâmetro");
-                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro");
+                if (!emPanico)
+                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro");
 
-                while (Aceitar(TipoToken.VIRGULA))
+                while (!emPanico && Aceitar(TipoToken.VIRGULA))
                 {
                     Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo do parâmetro após ','");
-                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro após o tipo");
+                    if (!emPanico)
+                        Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro após o tipo");
                 }
             }
 
-            //lista_var = identificador_nomes ["=" parametro_var] {"," identificador_nomes ["=" parametro_var]}
+            // lista_var = identificador_nomes ["=" parametro_var] {"," identificador_nomes ["=" parametro_var]}
             private void ListaVar()
             {
                 VarItem();
 
-                while (Aceitar(TipoToken.VIRGULA))
+                while (!emPanico && Aceitar(TipoToken.VIRGULA))
                 {
                     VarItem();
                 }
             }
 
-            //numero = digito {digito} ["." digito {digito}]
-
-
-            //operador_aditivo = "+" | "-" | “OR”
+            // operador_aditivo = "+" | "-" | "OR"
             private void OperadorAditivo()
             {
-                //  "+" | "-" | "OR"
-                if (Atual().Tipo == TipoToken.MAIS ||
-                    Atual().Tipo == TipoToken.MENOS ||
-                    Atual().Tipo == TipoToken.OR)
+                if (Atual().Tipo == TipoToken.MAIS || Atual().Tipo == TipoToken.MENOS || Atual().Tipo == TipoToken.OR)
                 {
                     Avancar();
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Esperado operador aditivo (+, -, OR)", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Esperado operador aditivo (+, -, OR)");
+                    Sincronizar();
                 }
             }
 
-            //operador_multiplicativo = "*" | "/" | “AND”
+            // operador_multiplicativo = "*" | "/" | "AND"
             private void OperadorMultiplicativo()
             {
-                // "*" | "/" | “AND”
-                if (Atual().Tipo == TipoToken.MULT ||
-                    Atual().Tipo == TipoToken.DIV ||
-                    Atual().Tipo == TipoToken.AND)
+                if (Atual().Tipo == TipoToken.MULT || Atual().Tipo == TipoToken.DIV || Atual().Tipo == TipoToken.AND)
                 {
                     Avancar();
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Esperado operador multiplicativo (*, /, AND)", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Esperado operador multiplicativo (*, /, AND)");
+                    Sincronizar();
                 }
             }
 
-            //operador_relacional = "==" | "<" | "<=" | ">" | ">=" | "!="
+            // operador_relacional = "==" | "<" | "<=" | ">" | ">=" | "!="
             private void OperadorRelacional()
             {
                 if (IsOperadorRelacional(Atual().Tipo))
@@ -782,7 +838,8 @@ namespace AnalisadorLexico
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Esperado operador relacional (==, !=, <, >, <=, >=)", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Esperado operador relacional (==, !=, <, >, <=, >=)");
+                    Sincronizar();
                 }
             }
 
@@ -796,7 +853,7 @@ namespace AnalisadorLexico
                        tipo == TipoToken.MAIOR_IGUAL;
             }
 
-            //parametro_var = numero | string | letra | digito | booleano
+            // parametro_var = numero | string | booleano | identificador_nomes
             private void ParametroVar()
             {
                 if (Atual().Tipo == TipoToken.NUMERO || Atual().Tipo == TipoToken.STRING || Atual().Tipo == TipoToken.BOOLEANO || Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
@@ -805,44 +862,62 @@ namespace AnalisadorLexico
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Esperado valor", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Esperado valor");
+                    Sincronizar();
                 }
             }
 
-            //sequencia_statement = statement {";" statement}
+            // sequencia_statement = statement {";" statement}
             private void SequenciaStatement()
             {
-                Statement();
-
-                while (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                while (EstaNoInicioDeStatement(Atual().Tipo))
                 {
-                    Avancar();
-                    if(Atual().Tipo != TipoToken.FECHA_CHAVE)
-                        Statement();
+                    Statement();
+
+                    // se o statement não consumir ';' internamente, tentamos consumir aqui
+                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                    {
+                        Avancar();
+                    }
+
+                    // se caiu em pânico e parou em ';', avança para tentar continuar
+                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                    {
+                        Avancar();
+                    }
+
+                    // se fechou bloco, encerra
+                    if (Atual().Tipo == TipoToken.FECHA_CHAVE)
+                        break;
                 }
             }
 
-            //statement = declaracao| statement_simples | statement_composto
+            // statement = declaracao | statement_simples | statement_composto
             private void Statement()
             {
                 if (Atual().Tipo == TipoToken.VAR)
                 {
                     Declaracao();
                 }
+                else if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                {
+                    StatementSimples();
+                }
+                else if (Atual().Tipo == TipoToken.IF || Atual().Tipo == TipoToken.WHILE || Atual().Tipo == TipoToken.FOR || Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
+                {
+                    StatementComposto();
+                }
                 else
                 {
-                    if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
-                    {
-                        StatementSimples();
-                    }
-                    else
-                    {
-                        erros.Add(new ErroLexico("Statement inválido",Atual().Linha,Atual().Coluna));
-                    }
+                    RegistrarErro("Statement inválido");
+                    Sincronizar();
+
+                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                        Avancar();
                 }
             }
 
-            //statement_composto = statement_repeticao | statement_condicional | declaracao_funcao
+            // statement_composto = statement_repeticao | statement_condicional | declaracao_funcao
             private void StatementComposto()
             {
                 switch (Atual().Tipo)
@@ -860,66 +935,76 @@ namespace AnalisadorLexico
                         DeclaracaoFuncao();
                         break;
                     default:
-                        erros.Add(new ErroLexico("Esperado IF, WHILE, FOR ou declaração de função", Atual().Linha, Atual().Coluna));
+                        RegistrarErro("Esperado IF, WHILE, FOR ou declaração de função");
+                        Sincronizar();
                         break;
                 }
             }
 
-            //statement_condicional = statement_if
+            // statement_condicional = statement_if
             private void StatementCondicional()
             {
                 StatementIf();
             }
 
-            //statement_for = “FOR(" identificador_nomes "=" expressao ";" expressao ";" identificador_nomes "=" expressao ")" "{" statement "}"
+            // statement_for = FOR(...)
             private void StatementFor()
             {
                 Esperar(TipoToken.FOR, "Esperado 'FOR'");
-                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após FOR");
+                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após FOR");
 
-                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de inicialização");
-                Esperar(TipoToken.IGUAL, "Esperado '=' na inicialização do FOR");
-                Expressao();
+                if (!emPanico) Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de inicialização");
+                if (!emPanico) Esperar(TipoToken.IGUAL, "Esperado '=' na inicialização do FOR");
+                if (!emPanico) Expressao();
 
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após inicialização do FOR");
 
-                Expressao();
+                if (!emPanico) Expressao();
 
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após condição do FOR");
 
-                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de incremento");
-                Esperar(TipoToken.IGUAL, "Esperado '=' no incremento do FOR");
-                Expressao();
+                if (!emPanico) Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de incremento");
+                if (!emPanico) Esperar(TipoToken.IGUAL, "Esperado '=' no incremento do FOR");
+                if (!emPanico) Expressao();
 
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após cláusulas do FOR");
 
-                Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do FOR");
-                Statement();
+                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do FOR");
+
+                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
+                    SequenciaStatement();
+
                 Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' para fechar bloco do FOR");
             }
 
-            //statement_if = “IF(" expressao ")" "{" statement "}" [“ELSE {" statement "}"]
+            // statement_if = IF(...) { statement } [ELSE { statement }]
             private void StatementIf()
             {
                 Esperar(TipoToken.IF, "Esperado 'IF'");
-                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após IF");
-                Expressao();
+                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após IF");
+                if (!emPanico) Expressao();
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após expressão do IF");
 
-                Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do IF");
-                Statement();
+                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do IF");
+
+                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
+                    SequenciaStatement();
+
                 Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' para fechar bloco do IF");
 
                 if (Atual().Tipo == TipoToken.ELSE)
                 {
                     Avancar();
                     Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' após ELSE");
-                    Statement();
+
+                    if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
+                        SequenciaStatement();
+
                     Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' após fechar bloco do ELSE");
                 }
             }
 
-            //statement_repeticao = statement_while | statement_for
+            // statement_repeticao = statement_while | statement_for
             private void StatementRepeticao()
             {
                 if (Atual().Tipo == TipoToken.WHILE)
@@ -932,14 +1017,15 @@ namespace AnalisadorLexico
                 }
             }
 
-            //statement_return = "RETURN" (digito | string | letra | booleano | identificador_nomes)
+            // statement_return = "RETURN" parametro_var
             private void StatementReturn()
             {
                 Esperar(TipoToken.RETURN, "Esperado RETURN");
-                ParametroVar();
+                if (!emPanico)
+                    ParametroVar();
             }
 
-            //statement_simples = identificador_nomes (atribuicao_var | chamada_funcao)
+            // statement_simples = identificador_nomes (atribuicao_var | chamada_funcao)
             private void StatementSimples()
             {
                 Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador no início do statement");
@@ -954,39 +1040,41 @@ namespace AnalisadorLexico
                 }
                 else
                 {
-                    erros.Add(new ErroLexico("Statement simples invalido", Atual().Linha, Atual().Coluna));
+                    RegistrarErro("Statement simples inválido");
+                    Sincronizar();
+
+                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
+                        Avancar();
                 }
             }
 
-            //statement_while = “WHILE(" expressao ")" "{" statement "}"
+            // statement_while = WHILE(...) { statement }
             private void StatementWhile()
             {
                 Esperar(TipoToken.WHILE, "Esperado 'WHILE'");
-                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '('");
+                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '('");
 
-                Expressao();
+                if (!emPanico) Expressao();
 
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')'");
-                Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
+                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
 
-                Statement();
+                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
+                    SequenciaStatement();
 
                 Esperar(TipoToken.FECHA_CHAVE, "Esperado '}'");
             }
 
-            // caracteres definido em Analisar()
-
-            //termo = fator{operador_multiplicativo fator}
+            // termo = fator {operador_multiplicativo fator}
             private void Termo()
             {
                 Fator();
 
-                while (Atual().Tipo == TipoToken.MULT ||
-                       Atual().Tipo == TipoToken.DIV ||
-                       Atual().Tipo == TipoToken.AND)
+                while (!emPanico && (Atual().Tipo == TipoToken.MULT || Atual().Tipo == TipoToken.DIV || Atual().Tipo == TipoToken.AND))
                 {
                     OperadorMultiplicativo();
-                    Fator();
+                    if (!emPanico)
+                        Fator();
                 }
             }
 
@@ -995,7 +1083,7 @@ namespace AnalisadorLexico
             {
                 Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da variável");
 
-                if (Aceitar(TipoToken.IGUAL))
+                if (!emPanico && Aceitar(TipoToken.IGUAL))
                 {
                     ParametroVar();
                 }

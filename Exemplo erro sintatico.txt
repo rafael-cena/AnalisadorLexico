@@ -1,0 +1,9 @@
+BLOCO Teste.
+{
+   VAR int : x = ;
+   y = 10
+   IF(x > ) {
+      z = 5;
+   }
+   VAR float : ;
+}
