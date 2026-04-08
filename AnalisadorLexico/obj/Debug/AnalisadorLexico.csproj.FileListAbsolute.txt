@@ -23,7 +23,6 @@ D:\Analisador\AnalisadorLexico\obj\Debug\AnalisadorLexico.pdb
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.exe.config
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.exe
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\bin\Debug\AnalisadorLexico.pdb
-C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csprojAssemblyReference.cache
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.Form1.resources
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.Properties.Resources.resources
 C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.GenerateResource.cache
@@ -75,3 +74,6 @@ C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe
 C:\Codigos\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.pdb
 D:\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.SuggestedBindingRedirects.cache
 D:\Compilador\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe.config
+C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.AssemblyReference.cache
+C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.csproj.SuggestedBindingRedirects.cache
+C:\Users\Aluno\Downloads\AnalisadorLexico\AnalisadorLexico\obj\Debug\AnalisadorLexico.exe.config

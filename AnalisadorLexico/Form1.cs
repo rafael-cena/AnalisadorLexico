@@ -469,6 +469,7 @@ namespace AnalisadorLexico
             Label label = new Label();
 
             label.Text = "Erro (" + colunaErro + ", " + linhaErro + "): " + mensagem;
+            label.Font = new Font("Consolas", 9, FontStyle.Regular);
             label.Location = new Point(8, linhaLogErro); // Posição dentro do Panel
             label.AutoSize = true; // Ajusta o tamanho ao texto
             label.Name = "labelErro"+linhaLogErro/16;
