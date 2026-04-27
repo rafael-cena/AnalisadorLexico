@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static AnalisadorLexico.Form1;
 
 namespace AnalisadorLexico
 {
@@ -33,7 +34,8 @@ namespace AnalisadorLexico
             pnNumbers.BackColor = Color.LightGray;
         }
 
-        public enum TipoToken {
+        public enum TipoToken
+        {
             ABRE_CHAVE,
             FECHA_CHAVE,
             ABRE_PARENTESE,
@@ -72,7 +74,7 @@ namespace AnalisadorLexico
 
         public class Token
         {
-            public TipoToken Tipo{ get; set; }
+            public TipoToken Tipo { get; set; }
             public string Lexema { get; set; }
             public int Linha { get; set; }
             public int Coluna { get; set; }
@@ -114,7 +116,7 @@ namespace AnalisadorLexico
 
             private char Proximo()
             {
-                if (pos + 1 >= codigo.Length) 
+                if (pos + 1 >= codigo.Length)
                     return '\0';
                 return codigo[pos + 1];
             }
@@ -237,8 +239,8 @@ namespace AnalisadorLexico
 
                         pos++;
                         coluna++;
-                        atual=codigo[pos];
-                        while (pos < codigo.Length-1 && atual != '"')//ABRE ASPAS DA STRING E LE STRING ATE FECHA ASPAS OU ATE O FIM DO CODIGO
+                        atual = codigo[pos];
+                        while (pos < codigo.Length - 1 && atual != '"')//ABRE ASPAS DA STRING E LE STRING ATE FECHA ASPAS OU ATE O FIM DO CODIGO
                         {
                             texto += atual;
                             pos++;
@@ -254,7 +256,7 @@ namespace AnalisadorLexico
                         }
                         else//NÃO ECONTROU FECHA ASPAS
                         {
-                            errosLexicos.Add(new ErroLexico($"String não fechada na linha '{linha}'", linha,coluna));
+                            errosLexicos.Add(new ErroLexico($"String não fechada na linha '{linha}'", linha, coluna));
                         }
                         continue;
                     }
@@ -271,7 +273,7 @@ namespace AnalisadorLexico
                         case '}':
                             tokens.Add(new Token(TipoToken.FECHA_CHAVE, "}", linha, coluna));
                             break;
-                        
+
                         case ':':
                             tokens.Add(new Token(TipoToken.DOIS_PONTOS, ":", linha, coluna));
                             break;
@@ -295,22 +297,28 @@ namespace AnalisadorLexico
                             tokens.Add(new Token(TipoToken.VIRGULA, ",", linha, coluna));
                             break;
 
-                        case '(': tokens.Add(new Token(TipoToken.ABRE_PARENTESE, "(", linha, coluna)); 
+                        case '(':
+                            tokens.Add(new Token(TipoToken.ABRE_PARENTESE, "(", linha, coluna));
                             break;
 
-                        case ')': tokens.Add(new Token(TipoToken.FECHA_PARENTESE, ")", linha, coluna)); 
+                        case ')':
+                            tokens.Add(new Token(TipoToken.FECHA_PARENTESE, ")", linha, coluna));
                             break;
 
-                        case '+': tokens.Add(new Token(TipoToken.MAIS, "+", linha, coluna)); 
+                        case '+':
+                            tokens.Add(new Token(TipoToken.MAIS, "+", linha, coluna));
                             break;
 
-                        case '-': tokens.Add(new Token(TipoToken.MENOS, "-", linha, coluna)); 
+                        case '-':
+                            tokens.Add(new Token(TipoToken.MENOS, "-", linha, coluna));
                             break;
 
-                        case '*': tokens.Add(new Token(TipoToken.MULT, "*", linha, coluna)); 
+                        case '*':
+                            tokens.Add(new Token(TipoToken.MULT, "*", linha, coluna));
                             break;
 
-                        case '/': tokens.Add(new Token(TipoToken.DIV, "/", linha, coluna)); 
+                        case '/':
+                            tokens.Add(new Token(TipoToken.DIV, "/", linha, coluna));
                             break;
 
                         case '!':
@@ -345,7 +353,7 @@ namespace AnalisadorLexico
                             break;
 
                         default:
-                            errosLexicos.Add(new ErroLexico($"Símbolo inválido '{atual}' na linha '{linha}', coluna '{coluna}'",linha,coluna));
+                            errosLexicos.Add(new ErroLexico($"Símbolo inválido '{atual}' na linha '{linha}', coluna '{coluna}'", linha, coluna));
                             break;
                     }
                     pos++;
@@ -438,7 +446,7 @@ namespace AnalisadorLexico
             List<Token> tokens = lexer.Analisar();
             if (lexer.errosLexicos.Count > 0)
             {
-                foreach(var erro in lexer.errosLexicos)
+                foreach (var erro in lexer.errosLexicos)
                 {
                     criarLogErro(erro.Mensagem, erro.Linha, erro.Coluna);
                 }
@@ -446,7 +454,7 @@ namespace AnalisadorLexico
             else
             {
                 Parser parser = new Parser(tokens);
-                parser.Parse();
+                var ast = parser.Parse();
 
                 // verifica erros sintaticos
                 if (parser.erros.Count > 0)
@@ -458,13 +466,23 @@ namespace AnalisadorLexico
                 }
                 else
                 {
-                    // se não houver erros, mostra sucesso e lista de tokens
-                    verificarSucesso(tokens);
+                    //verifica erros semanticos
+                    AnalisadorSemantico sem = new AnalisadorSemantico();
+                    sem.Analisar(ast);
+                    if (sem.erros.Count > 0)
+                    {
+                        foreach (var erroSem in sem.erros)
+                            criarLogErro(erroSem.Mensagem, erroSem.Linha, erroSem.Coluna);
+                    }
+                    else
+                    {
+                        verificarSucesso(tokens);
+                    }
                 }
             }
         }
 
-        private void criarLogErro (String mensagem, int linhaErro, int colunaErro)
+        private void criarLogErro(String mensagem, int linhaErro, int colunaErro)
         {
             Label label = new Label();
 
@@ -472,7 +490,7 @@ namespace AnalisadorLexico
             label.Font = new Font("Consolas", 9, FontStyle.Regular);
             label.Location = new Point(8, linhaLogErro); // Posição dentro do Panel
             label.AutoSize = true; // Ajusta o tamanho ao texto
-            label.Name = "labelErro"+linhaLogErro/16;
+            label.Name = "labelErro" + linhaLogErro / 16;
             linhaLogErro += 16;
 
             pLogErro.Visible = true;
@@ -516,6 +534,130 @@ namespace AnalisadorLexico
                 pLogErro.Visible = true;
             }
         }
+
+
+        public abstract class NoAST
+        {
+            public int Linha { get; set; }
+            public int Coluna { get; set; }
+        }
+
+        public class NoBlocoPrincipal : NoAST
+        {
+            public string Nome { get; set; }
+            public NoBlocoStatement Corpo { get; set; }
+        }
+
+        public class NoBlocoStatement : NoAST
+        {
+            public List<NoAST> Statements { get; set; } = new List<NoAST>();
+            public NoReturn StatementReturn { get; set; }
+        }
+
+        public class NoDeclaracaoVar : NoAST
+        {
+            public string Tipo { get; set; }
+            public List<NoVarItem> Variaveis { get; set; } = new List<NoVarItem>();
+        }
+
+        public class NoVarItem : NoAST
+        {
+            public string Nome { get; set; }
+            public NoExpressao ValorInicial { get; set; }
+        }
+
+        public class NoAtribuicao : NoAST
+        {
+            public string Nome { get; set; }
+            public NoExpressao Valor { get; set; }
+        }
+
+        public class NoChamadaFuncao : NoAST
+        {
+            public string Nome { get; set; }
+            public List<NoExpressao> Argumentos { get; set; } = new List<NoExpressao>();
+        }
+
+        public class NoDeclaracaoFuncao : NoAST
+        {
+            public string TipoRetorno { get; set; }
+            public string Nome { get; set; }
+            public List<NoParametroFuncao> Parametros { get; set; } = new List<NoParametroFuncao>();
+            public NoBlocoStatement Corpo { get; set; }
+        }
+
+        public class NoParametroFuncao : NoAST
+        {
+            public string Tipo { get; set; }
+            public string Nome { get; set; }
+        }
+
+        public class NoIf : NoAST
+        {
+            public NoExpressao Condicao { get; set; }
+            public NoBlocoStatement BlocoThen { get; set; }
+            public NoBlocoStatement BlocoElse { get; set; }
+        }
+
+        public class NoWhile : NoAST
+        {
+            public NoExpressao Condicao { get; set; }
+            public NoBlocoStatement Corpo { get; set; }
+        }
+
+        public class NoFor : NoAST
+        {
+            public string NomeInicializacao { get; set; }
+            public NoExpressao ValorInicializacao { get; set; }
+
+            public NoExpressao Condicao { get; set; }
+
+            public string NomeIncremento { get; set; }
+            public NoExpressao ValorIncremento { get; set; }
+
+            public NoBlocoStatement Corpo { get; set; }
+        }
+
+        public class NoReturn : NoAST
+        {
+            public NoExpressao Valor { get; set; }
+        }
+
+        public abstract class NoExpressao : NoAST { }
+
+        public class NoNumero : NoExpressao
+        {
+            public string Valor { get; set; }
+        }
+
+        public class NoString : NoExpressao
+        {
+            public string Valor { get; set; }
+        }
+
+        public class NoBoolean : NoExpressao
+        {
+            public string Valor { get; set; }
+        }
+
+        public class NoIdentificador : NoExpressao
+        {
+            public string Nome { get; set; }
+        }
+
+        public class NoBinario : NoExpressao
+        {
+            public NoExpressao Esquerda { get; set; }
+            public string Operador { get; set; }
+            public NoExpressao Direita { get; set; }
+        }
+
+        public class NoUnario : NoExpressao
+        {
+            public string Operador { get; set; }
+            public NoExpressao Operando { get; set; }
+        }
+
 
         public class Parser
         {
@@ -569,8 +711,8 @@ namespace AnalisadorLexico
                        tipo == TipoToken.RETURN ||
                        tipo == TipoToken.ABRE_CHAVE ||
                        tipo == TipoToken.FECHA_CHAVE ||
-                       tipo == TipoToken.ABRE_PARENTESE||
-                       tipo == TipoToken.FECHA_PARENTESE||
+                       tipo == TipoToken.ABRE_PARENTESE ||
+                       tipo == TipoToken.FECHA_PARENTESE ||
                        tipo == TipoToken.PONTO_VIRGULA ||
                        tipo == TipoToken.EOF;
             }
@@ -592,7 +734,6 @@ namespace AnalisadorLexico
                     emPanico = true;
                 }
             }
-
             private void Esperar(TipoToken tipo, string mensagem)
             {
                 if (!Aceitar(tipo))
@@ -613,235 +754,386 @@ namespace AnalisadorLexico
             }
 
             // S = bloco_principal
-            public void Parse()
+            public NoBlocoPrincipal Parse()
             {
-                BlocoPrincipal();
+                var inicio = BlocoPrincipal();
 
                 if (Atual().Tipo != TipoToken.EOF)
                 {
-                    RegistrarErro("Tokens após o fim do bloco principal");
+                    RegistrarErro("Tokens após fim do programa");
                     Sincronizar();
                 }
+
+                return inicio;
             }
 
             // atribuicao_var = "=" parametro_var ";"
-            private void AtribuicaoVar()
+            private NoAtribuicao AtribuicaoVar(string nome, Token tNome)
             {
                 Esperar(TipoToken.IGUAL, "Esperado '=' para iniciar a atribuição");
 
-                if (!emPanico)
-                    ParametroVar();
+                NoExpressao valor = Expressao();
 
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' ao final da atribuição");
+
+                return new NoAtribuicao
+                {
+                    Nome = nome,
+                    Valor = valor,
+                    Linha = tNome.Linha,
+                    Coluna = tNome.Coluna
+                };
             }
 
             // bloco_identificador_variavel = “VAR” identificador_tipo ":" lista_var ";"
-            private void BlocoIdentificadorVariavel()
+            private NoDeclaracaoVar BlocoIdentificadorVariavel()
             {
+                Token tVar = Atual();
                 Esperar(TipoToken.VAR, "Esperado VAR");
 
-                if (!emPanico)
-                    Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo da variável");
+                string tipo = Atual().Lexema;
+                Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo da variável");
 
-                if (!emPanico)
-                    Esperar(TipoToken.DOIS_PONTOS, "Esperado ':' após tipo");
+                Esperar(TipoToken.DOIS_PONTOS, "Esperado ':' após tipo");
 
-                if (!emPanico)
-                    ListaVar();
+                var decl = new NoDeclaracaoVar
+                {
+                    Tipo = tipo,
+                    Linha = tVar.Linha,
+                    Coluna = tVar.Coluna
+                };
+
+                decl.Variaveis = ListaVar();
 
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' ao final da declaração de variável");
+                return decl;
             }
 
             // bloco_principal = "BLOCO" identificador_nomes "." bloco_statement
-            private void BlocoPrincipal()
+            private NoBlocoPrincipal BlocoPrincipal()
             {
+                Token tBloco = Atual();
                 Esperar(TipoToken.BLOCO, "Esperado BLOCO");
 
-                if (!emPanico)
-                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador do bloco");
+                string nome = Atual().Lexema;
+                Token tNome = Atual();
+                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador do bloco");
 
-                if (!emPanico)
-                    Esperar(TipoToken.PONTO, "Esperado '.'");
+                Esperar(TipoToken.PONTO, "Esperado '.'");
 
-                if (!emPanico)
-                    BlocoStatement();
+                var bloco = new NoBlocoPrincipal
+                {
+                    Nome = nome,
+                    Linha = tBloco.Linha,
+                    Coluna = tBloco.Coluna
+                };
+
+                bloco.Corpo = BlocoStatement();
+                return bloco;
             }
 
             // bloco_statement = "{" sequencia_statement [statement_return] "}"
-            private void BlocoStatement()
+            private NoBlocoStatement BlocoStatement()
             {
+                Token tAbre = Atual();
+                var bloco = new NoBlocoStatement();
+
                 Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
 
+                bloco.Linha = tAbre.Linha;
+                bloco.Coluna = tAbre.Coluna;
+
                 if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
-                    SequenciaStatement();
+                    bloco.Statements = SequenciaStatement();
 
                 if (!emPanico && Atual().Tipo == TipoToken.RETURN)
-                    StatementReturn();
+                    bloco.StatementReturn = StatementReturn();
 
                 Esperar(TipoToken.FECHA_CHAVE, "Esperado '}'");
+                return bloco;
             }
 
             // chamada_funcao = "(" [lista_param_funcao] ")" ";"
-            private void ChamadaFuncao()
+            private NoChamadaFuncao ChamadaFuncao(string nome, Token tNome)
             {
                 Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' para iniciar chamada");
 
-                if (!emPanico && Atual().Tipo != TipoToken.FECHA_PARENTESE)
+                var chamada = new NoChamadaFuncao
                 {
-                    ListaParamFuncao();
-                }
+                    Nome = nome,
+                    Linha = tNome.Linha,
+                    Coluna = tNome.Coluna
+                };
+
+                if (!emPanico && Atual().Tipo != TipoToken.FECHA_PARENTESE)
+                    chamada.Argumentos = ListaArgumentosChamada();
 
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' para fechar chamada de função");
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após chamada de função");
-            }
 
-            // declaracao = bloco_identificador_variavel
-            private void Declaracao()
+                return chamada;
+            }
+            private List<NoExpressao> ListaArgumentosChamada()
             {
-                BlocoIdentificadorVariavel();
+                var args = new List<NoExpressao>();
+
+                args.Add(Expressao());
+
+                while (!emPanico && Aceitar(TipoToken.VIRGULA))
+                {
+                    args.Add(Expressao());
+                }
+
+                return args;
+            }
+            // declaracao = bloco_identificador_variavel
+            private NoDeclaracaoVar Declaracao()
+            {
+                return BlocoIdentificadorVariavel();
             }
 
             // declaracao_funcao = identificador_tipo identificador_nomes "(" [lista_param_funcao] ")" bloco_statement
-            private void DeclaracaoFuncao()
+            private NoDeclaracaoFuncao DeclaracaoFuncao()
             {
+                string tipoRetorno = Atual().Lexema;
                 Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo de retorno da função");
-                if (!emPanico)
-                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da função");
 
-                if (!emPanico)
-                    Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após o nome da função");
+                string nome = Atual().Lexema;
+                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da função");
 
-                if (!emPanico && Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
+                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após o nome da função");
+
+                var func = new NoDeclaracaoFuncao
                 {
-                    ListaParamFuncao();
+                    TipoRetorno = tipoRetorno,
+                    Nome = nome
+                };
+
+                if (!emPanico && Atual().Tipo != TipoToken.FECHA_PARENTESE)
+                {
+                    func.Parametros = ListaParamFuncao();
                 }
 
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após os parâmetros");
 
-                if (!emPanico)
-                    BlocoStatement();
+                func.Corpo = BlocoStatement();
+
+                return func;
             }
 
             // expressao = expressao_simples [operador_relacional expressao_simples]
-            private void Expressao()
+            private NoExpressao Expressao()
             {
-                ExpressaoSimples();
+                NoExpressao esquerda = ExpressaoSimples();
 
                 if (!emPanico && IsOperadorRelacional(Atual().Tipo))
                 {
-                    OperadorRelacional();
-                    if (!emPanico)
-                        ExpressaoSimples();
+                    Token tOp = Atual();
+                    string op = OperadorRelacional();
+                    NoExpressao direita = ExpressaoSimples();
+
+                    return new NoBinario
+                    {
+                        Linha = tOp.Linha,
+                        Coluna = tOp.Coluna,
+                        Esquerda = esquerda,
+                        Operador = op,
+                        Direita = direita
+                    };
                 }
+
+                return esquerda;
             }
 
             // expressao_simples = ["-"] termo {operador_aditivo termo}
-            private void ExpressaoSimples()
+            private NoExpressao ExpressaoSimples()
             {
+                bool temMenosUnario = false;
+                Token tMenos = Atual();
+
                 if (Atual().Tipo == TipoToken.MENOS)
                 {
+                    temMenosUnario = true;
                     Avancar();
                 }
 
-                Termo();
+                NoExpressao atual = Termo();
+
+                if (temMenosUnario)
+                {
+                    atual = new NoUnario
+                    {
+                        Linha = tMenos.Linha,
+                        Coluna = tMenos.Coluna,
+                        Operador = "-",
+                        Operando = atual
+                    };
+                }
 
                 while (!emPanico && (Atual().Tipo == TipoToken.MAIS || Atual().Tipo == TipoToken.MENOS || Atual().Tipo == TipoToken.OR))
                 {
-                    OperadorAditivo();
-                    if (!emPanico)
-                        Termo();
+                    Token tOp = Atual();
+                    string op = OperadorAditivo();
+                    NoExpressao direito = Termo();
+
+                    atual = new NoBinario
+                    {
+                        Linha = tOp.Linha,
+                        Coluna = tOp.Coluna,
+                        Esquerda = atual,
+                        Operador = op,
+                        Direita = direito
+                    };
                 }
+
+                return atual;
             }
 
             // fator = numero | identificador_nomes | "(" expressao ")"
-            private void Fator()
+            private NoExpressao Fator()
             {
-                if (Atual().Tipo == TipoToken.NUMERO || Atual().Tipo == TipoToken.STRING || Atual().Tipo == TipoToken.BOOLEANO)
+                var token = Atual();
+
+                if (Aceitar(TipoToken.NUMERO))
                 {
-                    Avancar();
+                    return new NoNumero
+                    {
+                        Valor = token.Lexema,
+                        Linha = token.Linha,
+                        Coluna = token.Coluna
+                    };
                 }
-                else if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+
+                if (Aceitar(TipoToken.STRING))
                 {
-                    Avancar();
+                    return new NoString
+                    {
+                        Valor = token.Lexema,
+                        Linha = token.Linha,
+                        Coluna = token.Coluna
+                    };
                 }
-                else if (Aceitar(TipoToken.ABRE_PARENTESE))
+
+                if (Aceitar(TipoToken.BOOLEANO))
                 {
-                    Expressao();
+                    return new NoBoolean
+                    {
+                        Valor = token.Lexema,
+                        Linha = token.Linha,
+                        Coluna = token.Coluna
+                    };
+                }
+
+                if (Aceitar(TipoToken.IDENTIFICADOR_NOME))
+                {
+                    return new NoIdentificador
+                    {
+                        Nome = token.Lexema,
+                        Linha = token.Linha,
+                        Coluna = token.Coluna
+                    };
+                }
+
+                if (Aceitar(TipoToken.ABRE_PARENTESE))
+                {
+                    var expr = Expressao();
                     Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')'");
+                    return expr;
                 }
-                else
-                {
-                    RegistrarErro("Esperado um valor, identificador ou '('");
-                    Sincronizar();
-                }
+
+                RegistrarErro("Esperado um valor, identificador ou '('");
+                Sincronizar();
+
+                return new NoNumero { Valor = "0" };
             }
 
             // lista_param_funcao = identificador_tipo identificador_nomes {"," identificador_tipo identificador_nomes}
-            private void ListaParamFuncao()
+            private List<NoParametroFuncao> ListaParamFuncao()
             {
-                Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo do parâmetro");
-                if (!emPanico)
-                    Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro");
+                var lista = new List<NoParametroFuncao>();
+
+                lista.Add(ParametroFuncao());
 
                 while (!emPanico && Aceitar(TipoToken.VIRGULA))
                 {
-                    Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo do parâmetro após ','");
-                    if (!emPanico)
-                        Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro após o tipo");
+                    lista.Add(ParametroFuncao());
                 }
+
+                return lista;
+            }
+
+            private NoParametroFuncao ParametroFuncao()
+            {
+                string tipo = Atual().Lexema;
+                Esperar(TipoToken.IDENTIFICADOR_TIPO, "Esperado tipo do parâmetro");
+
+                string nome = Atual().Lexema;
+                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome do parâmetro");
+
+                return new NoParametroFuncao
+                {
+                    Tipo = tipo,
+                    Nome = nome
+                };
             }
 
             // lista_var = identificador_nomes ["=" parametro_var] {"," identificador_nomes ["=" parametro_var]}
-            private void ListaVar()
+            private List<NoVarItem> ListaVar()
             {
-                VarItem();
+                var lista = new List<NoVarItem>();
+
+                lista.Add(VarItem());
 
                 while (!emPanico && Aceitar(TipoToken.VIRGULA))
                 {
-                    VarItem();
+                    lista.Add(VarItem());
                 }
+
+                return lista;
             }
 
             // operador_aditivo = "+" | "-" | "OR"
-            private void OperadorAditivo()
+            private string OperadorAditivo()
             {
                 if (Atual().Tipo == TipoToken.MAIS || Atual().Tipo == TipoToken.MENOS || Atual().Tipo == TipoToken.OR)
                 {
+                    string op = Atual().Lexema;
                     Avancar();
+                    return op;
                 }
-                else
-                {
-                    RegistrarErro("Esperado operador aditivo (+, -, OR)");
-                    Sincronizar();
-                }
+
+                RegistrarErro("Esperado operador aditivo (+, -, OR)");
+                Sincronizar();
+                return "+";
             }
 
             // operador_multiplicativo = "*" | "/" | "AND"
-            private void OperadorMultiplicativo()
+            private string OperadorMultiplicativo()
             {
                 if (Atual().Tipo == TipoToken.MULT || Atual().Tipo == TipoToken.DIV || Atual().Tipo == TipoToken.AND)
                 {
+                    string op = Atual().Lexema;
                     Avancar();
+                    return op;
                 }
-                else
-                {
-                    RegistrarErro("Esperado operador multiplicativo (*, /, AND)");
-                    Sincronizar();
-                }
+                RegistrarErro("Esperado operador multiplicativo (*, /, AND)");
+                Sincronizar();
+                return "*";
             }
 
             // operador_relacional = "==" | "<" | "<=" | ">" | ">=" | "!="
-            private void OperadorRelacional()
+            private string OperadorRelacional()
             {
                 if (IsOperadorRelacional(Atual().Tipo))
                 {
+                    string op = Atual().Lexema;
                     Avancar();
+                    return op;
                 }
-                else
-                {
-                    RegistrarErro("Esperado operador relacional (==, !=, <, >, <=, >=)");
-                    Sincronizar();
-                }
+
+                RegistrarErro("Esperado operador relacional");
+                Sincronizar();
+                return "==";
             }
 
             private bool IsOperadorRelacional(TipoToken tipo)
@@ -855,90 +1147,104 @@ namespace AnalisadorLexico
             }
 
             // parametro_var = numero | string | booleano | identificador_nomes
-            private void ParametroVar()
+            private NoExpressao ParametroVar()
             {
-                if (Atual().Tipo == TipoToken.NUMERO || Atual().Tipo == TipoToken.STRING || Atual().Tipo == TipoToken.BOOLEANO || Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                if (Atual().Tipo == TipoToken.NUMERO)
                 {
+                    var t = Atual();
                     Avancar();
+                    return new NoNumero { Valor = t.Lexema };
+                }
+
+                if (Atual().Tipo == TipoToken.STRING)
+                {
+                    var t = Atual();
+                    Avancar();
+                    return new NoString { Valor = t.Lexema };
+                }
+
+                if (Atual().Tipo == TipoToken.BOOLEANO)
+                {
+                    var t = Atual();
+                    Avancar();
+                    return new NoBoolean { Valor = t.Lexema };
+                }
+
+                if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                {
+                    var t = Atual();
+                    Avancar();
+                    return new NoIdentificador { Nome = t.Lexema };
                 }
                 else
                 {
                     RegistrarErro("Esperado valor");
                     Sincronizar();
+                    return new NoNumero { Valor = "0" };
                 }
             }
 
             // sequencia_statement = statement {";" statement}
-            private void SequenciaStatement()
+            private List<NoAST> SequenciaStatement()
             {
+                var statements = new List<NoAST>();
+
                 while (EstaNoInicioDeStatement(Atual().Tipo))
                 {
-                    Statement();
+                    var stmt = Statement();
+                    if (stmt != null)
+                        statements.Add(stmt);
 
-                    // se o statement não consumir ';' internamente, tentamos consumir aqui
-                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
-                    {
-                        Avancar();
-                    }
-
-                    // se caiu em pânico e parou em ';', avança para tentar continuar
-                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
-                    {
-                        Avancar();
-                    }
-
-                    // se fechou bloco, encerra
-                    if (Atual().Tipo == TipoToken.FECHA_CHAVE)
+                    if (Atual().Tipo == TipoToken.FECHA_CHAVE || Atual().Tipo == TipoToken.RETURN)
                         break;
                 }
+
+                return statements;
             }
 
             // statement = declaracao | statement_simples | statement_composto
-            private void Statement()
+            private NoAST Statement()
             {
                 if (Atual().Tipo == TipoToken.VAR)
-                {
-                    Declaracao();
-                }
-                else if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
-                {
-                    StatementSimples();
-                }
-                else if (Atual().Tipo == TipoToken.IF || Atual().Tipo == TipoToken.WHILE || Atual().Tipo == TipoToken.FOR || Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
-                {
-                    StatementComposto();
-                }
-                else
-                {
-                    RegistrarErro("Statement inválido");
-                    Sincronizar();
+                    return Declaracao();
 
-                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
-                        Avancar();
+                if (Atual().Tipo == TipoToken.IDENTIFICADOR_NOME)
+                    return StatementSimples();
+
+                if (Atual().Tipo == TipoToken.IF ||
+                    Atual().Tipo == TipoToken.WHILE ||
+                    Atual().Tipo == TipoToken.FOR ||
+                    Atual().Tipo == TipoToken.IDENTIFICADOR_TIPO)
+                {
+                    return StatementComposto();
                 }
+
+                RegistrarErro("Statement inválido");
+                Sincronizar();
+                return null;
             }
 
             // statement_composto = statement_repeticao | statement_condicional | declaracao_funcao
-            private void StatementComposto()
+            private NoAST StatementComposto()
             {
                 switch (Atual().Tipo)
                 {
                     case TipoToken.IF:
-                        StatementCondicional();
-                        break;
+                        return StatementIf();
+
                     case TipoToken.WHILE:
-                        StatementWhile();
-                        break;
+                        return StatementWhile();
+
                     case TipoToken.FOR:
-                        StatementFor();
-                        break;
+                        return StatementFor();
+
                     case TipoToken.IDENTIFICADOR_TIPO:
-                        DeclaracaoFuncao();
-                        break;
+                        return DeclaracaoFuncao();
+
                     default:
                         RegistrarErro("Esperado IF, WHILE, FOR ou declaração de função");
                         Sincronizar();
-                        break;
+                        return null;
                 }
             }
 
@@ -949,60 +1255,76 @@ namespace AnalisadorLexico
             }
 
             // statement_for = FOR(...)
-            private void StatementFor()
+            private NoFor StatementFor()
             {
+                Token tFor = Atual();
                 Esperar(TipoToken.FOR, "Esperado 'FOR'");
-                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após FOR");
+                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após FOR");
 
-                if (!emPanico) Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de inicialização");
-                if (!emPanico) Esperar(TipoToken.IGUAL, "Esperado '=' na inicialização do FOR");
-                if (!emPanico) Expressao();
+                string nomeInicial = Atual().Lexema;
+                Token tNomeIni = Atual();
+                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de inicialização no FOR");
+                Esperar(TipoToken.IGUAL, "Esperado '=' na inicialização do FOR");
 
+                var valorInicial = Expressao();
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após inicialização do FOR");
 
-                if (!emPanico) Expressao();
-
+                var condicao = Expressao();
                 Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após condição do FOR");
 
-                if (!emPanico) Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de incremento");
-                if (!emPanico) Esperar(TipoToken.IGUAL, "Esperado '=' no incremento do FOR");
-                if (!emPanico) Expressao();
+                string nomeIncremento = Atual().Lexema;
+                Token tNomeInc = Atual();
+                Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador de incremento no FOR");
+                Esperar(TipoToken.IGUAL, "Esperado '=' no incremento do FOR");
 
+                var valorIncremento = Expressao();
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após cláusulas do FOR");
 
-                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do FOR");
+                var noFor = new NoFor
+                {
+                    Linha = tFor.Linha,
+                    Coluna = tFor.Coluna,
+                    NomeInicializacao = nomeInicial,
+                    ValorInicializacao = valorInicial,
+                    Condicao = condicao,
+                    NomeIncremento = nomeIncremento,
+                    ValorIncremento = valorIncremento
+                };
 
-                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
-                    SequenciaStatement();
-
-                Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' para fechar bloco do FOR");
+                noFor.Corpo = BlocoStatement();
+                return noFor;
             }
 
             // statement_if = IF(...) { statement } [ELSE { statement }]
-            private void StatementIf()
+            private NoIf StatementIf()
             {
+                Token tIf = Atual();
                 Esperar(TipoToken.IF, "Esperado 'IF'");
-                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após IF");
-                if (!emPanico) Expressao();
+                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após IF");
+
+                var noIf = new NoIf
+                {
+                    Linha = tIf.Linha,
+                    Coluna = tIf.Coluna,
+                    Condicao = Expressao()
+                };
+
                 Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após expressão do IF");
-
-                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' para iniciar bloco do IF");
-
-                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
-                    SequenciaStatement();
-
-                Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' para fechar bloco do IF");
+                noIf.BlocoThen = BlocoStatement();
 
                 if (Atual().Tipo == TipoToken.ELSE)
                 {
+                    Token tElse = Atual();
                     Avancar();
-                    Esperar(TipoToken.ABRE_CHAVE, "Esperado '{' após ELSE");
-
-                    if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
-                        SequenciaStatement();
-
-                    Esperar(TipoToken.FECHA_CHAVE, "Esperado '}' após fechar bloco do ELSE");
+                    noIf.BlocoElse = BlocoStatement();
+                    if (noIf.BlocoElse != null && noIf.BlocoElse.Linha == 0)
+                    {
+                        noIf.BlocoElse.Linha = tElse.Linha;
+                        noIf.BlocoElse.Coluna = tElse.Coluna;
+                    }
                 }
+
+                return noIf;
             }
 
             // statement_repeticao = statement_while | statement_for
@@ -1019,75 +1341,434 @@ namespace AnalisadorLexico
             }
 
             // statement_return = "RETURN" parametro_var
-            private void StatementReturn()
+            private NoReturn StatementReturn()
             {
+                Token tReturn = Atual();
                 Esperar(TipoToken.RETURN, "Esperado RETURN");
-                if (!emPanico)
-                    ParametroVar();
+
+                var noReturn = new NoReturn
+                {
+                    Linha = tReturn.Linha,
+                    Coluna = tReturn.Coluna,
+                    Valor = Expressao()
+                };
+
+                Esperar(TipoToken.PONTO_VIRGULA, "Esperado ';' após RETURN");
+                return noReturn;
             }
 
             // statement_simples = identificador_nomes (atribuicao_var | chamada_funcao)
-            private void StatementSimples()
+            private NoAST StatementSimples()
             {
+                Token tNome = Atual();
+                string nome = Atual().Lexema;
+
                 Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado identificador no início do statement");
 
                 if (Atual().Tipo == TipoToken.IGUAL)
-                {
-                    AtribuicaoVar();
-                }
-                else if (Atual().Tipo == TipoToken.ABRE_PARENTESE)
-                {
-                    ChamadaFuncao();
-                }
-                else
-                {
-                    RegistrarErro("Statement simples inválido");
-                    Sincronizar();
+                    return AtribuicaoVar(nome, tNome);
 
-                    if (Atual().Tipo == TipoToken.PONTO_VIRGULA)
-                        Avancar();
-                }
+                if (Atual().Tipo == TipoToken.ABRE_PARENTESE)
+                    return ChamadaFuncao(nome, tNome);
+
+                RegistrarErro("Statement simples inválido");
+                Sincronizar();
+                return null;
             }
 
             // statement_while = WHILE(...) { statement }
-            private void StatementWhile()
+            private NoWhile StatementWhile()
             {
+                Token tWhile = Atual();
                 Esperar(TipoToken.WHILE, "Esperado 'WHILE'");
-                if (!emPanico) Esperar(TipoToken.ABRE_PARENTESE, "Esperado '('");
+                Esperar(TipoToken.ABRE_PARENTESE, "Esperado '(' após WHILE");
 
-                if (!emPanico) Expressao();
+                var noWhile = new NoWhile
+                {
+                    Linha = tWhile.Linha,
+                    Coluna = tWhile.Coluna,
+                    Condicao = Expressao()
+                };
 
-                Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')'");
-                if (!emPanico) Esperar(TipoToken.ABRE_CHAVE, "Esperado '{'");
-
-                if (!emPanico && EstaNoInicioDeStatement(Atual().Tipo))
-                    SequenciaStatement();
-
-                Esperar(TipoToken.FECHA_CHAVE, "Esperado '}'");
+                Esperar(TipoToken.FECHA_PARENTESE, "Esperado ')' após expressão do WHILE");
+                noWhile.Corpo = BlocoStatement();
+                return noWhile;
             }
 
             // termo = fator {operador_multiplicativo fator}
-            private void Termo()
+            private NoExpressao Termo()
             {
-                Fator();
+                NoExpressao atual = Fator();
 
-                while (!emPanico && (Atual().Tipo == TipoToken.MULT || Atual().Tipo == TipoToken.DIV || Atual().Tipo == TipoToken.AND))
+                while (!emPanico && (Atual().Tipo == TipoToken.MULT ||
+                                     Atual().Tipo == TipoToken.DIV ||
+                                     Atual().Tipo == TipoToken.AND))
                 {
-                    OperadorMultiplicativo();
-                    if (!emPanico)
-                        Fator();
+                    Token tOp = Atual();
+                    string op = OperadorMultiplicativo();
+                    NoExpressao direito = Fator();
+
+                    atual = new NoBinario
+                    {
+                        Linha = tOp.Linha,
+                        Coluna = tOp.Coluna,
+                        Esquerda = atual,
+                        Operador = op,
+                        Direita = direito
+                    };
                 }
+
+                return atual;
             }
 
             // var_item = identificador_nomes ["=" parametro_var]
-            private void VarItem()
+            private NoVarItem VarItem()
             {
+                Token tNome = Atual();
+                string nome = Atual().Lexema;
+
                 Esperar(TipoToken.IDENTIFICADOR_NOME, "Esperado nome da variável");
 
+                NoExpressao valor = null;
+
                 if (!emPanico && Aceitar(TipoToken.IGUAL))
+                    valor = Expressao();
+
+                return new NoVarItem
                 {
-                    ParametroVar();
+                    Nome = nome,
+                    ValorInicial = valor,
+                    Linha = tNome.Linha,
+                    Coluna = tNome.Coluna
+                };
+            }
+        }
+
+        public class Simbolo
+        {
+            public string Nome { get; set; }
+            public string Tipo { get; set; }
+            public bool Inicializado { get; set; }
+            public bool Utilizado { get; set; }
+            public bool EhFuncao { get; set; }
+            public int Linha { get; set; }
+            public int Coluna { get; set; }
+
+            public List<string> Parametros { get; set; } = new List<string>();
+        }
+
+        public class TabelaSimbolos
+        {
+            private Dictionary<string, Simbolo> tabela = new Dictionary<string, Simbolo>();
+
+            public bool Declarar(Simbolo s)
+            {
+                if (tabela.ContainsKey(s.Nome))
+                    return false;
+
+                tabela[s.Nome] = s;
+                return true;
+            }
+
+            public Simbolo Obter(string nome)
+            {
+                return tabela.ContainsKey(nome) ? tabela[nome] : null;
+            }
+
+            public IEnumerable<Simbolo> Todos() => tabela.Values;
+        }
+
+        public class ErroSemantico
+        {
+            public string Mensagem { get; set; }
+            public int Linha { get; set; }
+            public int Coluna { get; set; }
+
+            public ErroSemantico(string msg, int linha, int coluna)
+            {
+                Mensagem = msg;
+                Linha = linha;
+                Coluna = coluna;
+            }
+        }
+
+        public class AnalisadorSemantico
+        {
+            private TabelaSimbolos tabela = new TabelaSimbolos();
+            public List<ErroSemantico> erros = new List<ErroSemantico>();
+
+            public void Analisar(NoBlocoPrincipal raiz)
+            {
+                AnalisarBloco(raiz.Corpo);
+                foreach (var s in tabela.Todos())
+                {
+                    if (!s.Utilizado && !s.EhFuncao)
+                        erros.Add(new ErroSemantico($"Variável '{s.Nome}' declarada mas não utilizada", s.Linha, s.Coluna));
                 }
+            }
+
+            private void AnalisarBloco(NoBlocoStatement bloco)
+            {
+                foreach (var stmt in bloco.Statements)
+                    AnalisarStatement(stmt);
+
+                if (bloco.StatementReturn != null)
+                    AnalisarReturn(bloco.StatementReturn);
+            }
+
+            private void AnalisarStatement(NoAST stmt)
+            {
+                switch (stmt)
+                {
+                    case NoDeclaracaoVar d:
+                        AnalisarDeclaracao(d);
+                        break;
+
+                    case NoAtribuicao a:
+                        AnalisarAtribuicao(a);
+                        break;
+
+                    case NoChamadaFuncao c:
+                        AnalisarChamada(c);
+                        break;
+
+                    case NoIf i:
+                        AnalisarIf(i);
+                        break;
+
+                    case NoWhile w:
+                        AnalisarWhile(w);
+                        break;
+
+                    case NoFor f:
+                        AnalisarFor(f);
+                        break;
+
+                    case NoDeclaracaoFuncao func:
+                        AnalisarFuncao(func);
+                        break;
+                }
+            }
+
+            // =========================
+            // DECLARAÇÃO
+            // =========================
+            private void AnalisarDeclaracao(NoDeclaracaoVar d)
+            {
+                foreach (var v in d.Variaveis)
+                {
+                    var simbolo = new Simbolo
+                    {
+                        Nome = v.Nome,
+                        Tipo = d.Tipo,
+                        Inicializado = false,
+                        Linha = v.Linha,
+                        Coluna = v.Coluna
+                    };
+
+                    if (!tabela.Declarar(simbolo))
+                    {
+                        erros.Add(new ErroSemantico($"Variável '{v.Nome}' já declarada", v.Linha, v.Coluna));
+                        continue;
+                    }
+
+                    if (v.ValorInicial != null)
+                    {
+                        string tipoExpr = AnalisarExpressao(v.ValorInicial);
+
+                        if (!TiposCompativeis(d.Tipo, tipoExpr))
+                            erros.Add(new ErroSemantico($"Tipo incompatível na inicialização de '{v.Nome}'", v.Linha, v.Coluna));
+
+                        simbolo.Inicializado = true;
+                    }
+                }
+            }
+
+            // =========================
+            // ATRIBUIÇÃO
+            // =========================
+            private void AnalisarAtribuicao(NoAtribuicao a)
+            {
+                var s = tabela.Obter(a.Nome);
+
+                if (s == null)
+                {
+                    erros.Add(new ErroSemantico($"Variável '{a.Nome}' não declarada", a.Linha, a.Coluna));
+                    return;
+                }
+
+                string tipoExpr = AnalisarExpressao(a.Valor);
+
+                if (!TiposCompativeis(s.Tipo, tipoExpr))
+                    erros.Add(new ErroSemantico($"Tipo incompatível na atribuição para '{a.Nome}'", a.Linha, a.Coluna));
+
+                s.Inicializado = true;
+            }
+
+            // =========================
+            // EXPRESSÕES
+            // =========================
+            private string AnalisarExpressao(NoExpressao expr)
+            {
+                switch (expr)
+                {
+                    case NoNumero n:
+                        return n.Valor.Contains(".") ? "float" : "int";
+
+                    case NoString str:
+                        return "String";
+
+                    case NoBoolean boole:
+                        return "bool";
+
+                    case NoIdentificador id:
+                        var s = tabela.Obter(id.Nome);
+
+                        if (s == null)
+                        {
+                            erros.Add(new ErroSemantico($"Variável '{id.Nome}' não declarada", expr.Linha, expr.Coluna));
+                            return "erro";
+                        }
+
+                        if (!s.Inicializado)
+                            erros.Add(new ErroSemantico($"Variável '{id.Nome}' usada sem inicialização", expr.Linha, expr.Coluna));
+
+                        s.Utilizado = true;
+                        return s.Tipo;
+
+                    case NoBinario b:
+                        string t1 = AnalisarExpressao(b.Esquerda);
+                        string t2 = AnalisarExpressao(b.Direita);
+
+                        if (!TiposCompativeis(t1, t2))
+                            erros.Add(new ErroSemantico($"Tipos incompatíveis em operação '{b.Operador}'", b.Linha, b.Coluna));
+
+                        return ResultadoOperacao(t1, t2);
+
+                    case NoUnario u:
+                        return AnalisarExpressao(u.Operando);
+                }
+
+                return "erro";
+            }
+
+            private bool TiposCompativeis(string t1, string t2)
+            {
+                if (t1 == t2) return true;
+
+                // casting implícito
+                if (t1 == "float" && t2 == "int")
+                    return true;
+
+                return false;
+            }
+
+            private string ResultadoOperacao(string t1, string t2)
+            {
+                if (t1 == "float" || t2 == "float")
+                    return "float";
+
+                return t1;
+            }
+
+            // =========================
+            // FUNÇÕES
+            // =========================
+            private void AnalisarFuncao(NoDeclaracaoFuncao f)
+            {
+                var simbolo = new Simbolo
+                {
+                    Nome = f.Nome,
+                    Tipo = f.TipoRetorno,
+                    EhFuncao = true,
+                    Parametros = f.Parametros.Select(p => p.Tipo).ToList()
+                };
+
+                if (!tabela.Declarar(simbolo))
+                {
+                    erros.Add(new ErroSemantico($"Função '{f.Nome}' já declarada", f.Linha, f.Coluna));
+                    return;
+                }
+
+                // escopo único
+                foreach (var p in f.Parametros)
+                {
+                    tabela.Declarar(new Simbolo
+                    {
+                        Nome = p.Nome,
+                        Tipo = p.Tipo,
+                        Inicializado = true
+                    });
+                }
+
+                AnalisarBloco(f.Corpo);
+            }
+
+            private void AnalisarChamada(NoChamadaFuncao c)
+            {
+                var s = tabela.Obter(c.Nome);
+
+                if (s == null || !s.EhFuncao)
+                {
+                    erros.Add(new ErroSemantico($"Função '{c.Nome}' não declarada", c.Linha, c.Coluna));
+                    return;
+                }
+
+                if (c.Argumentos.Count != s.Parametros.Count)
+                {
+                    erros.Add(new ErroSemantico($"Número de parâmetros incorreto em '{c.Nome}'", c.Linha, c.Coluna));
+                    return;
+                }
+
+                for (int i = 0; i < c.Argumentos.Count; i++)
+                {
+                    string tipoArg = AnalisarExpressao(c.Argumentos[i]);
+
+                    if (!TiposCompativeis(s.Parametros[i], tipoArg))
+                    {
+                        erros.Add(new ErroSemantico($"Tipo inválido no parâmetro {i + 1} de '{c.Nome}'", c.Linha, c.Coluna));
+                    }
+                }
+            }
+
+            // =========================
+            // CONTROLE DE FLUXO
+            // =========================
+            private void AnalisarIf(NoIf i)
+            {
+                string tipo = AnalisarExpressao(i.Condicao);
+
+                if (tipo != "bool")
+                    erros.Add(new ErroSemantico("Condição do IF deve ser booleana", i.Linha, i.Coluna));
+
+                AnalisarBloco(i.BlocoThen);
+
+                if (i.BlocoElse != null)
+                    AnalisarBloco(i.BlocoElse);
+            }
+
+            private void AnalisarWhile(NoWhile w)
+            {
+                string tipo = AnalisarExpressao(w.Condicao);
+
+                if (tipo != "bool")
+                    erros.Add(new ErroSemantico("Condição do WHILE deve ser booleana", w.Linha, w.Coluna));
+
+                AnalisarBloco(w.Corpo);
+            }
+
+            private void AnalisarFor(NoFor f)
+            {
+                AnalisarExpressao(f.ValorInicializacao);
+                AnalisarExpressao(f.Condicao);
+                AnalisarExpressao(f.ValorIncremento);
+
+                AnalisarBloco(f.Corpo);
+            }
+
+            private void AnalisarReturn(NoReturn r)
+            {
+                AnalisarExpressao(r.Valor);
             }
         }
 
@@ -1095,7 +1776,7 @@ namespace AnalisadorLexico
         {
             pLogErro.Visible = false;
             linhaLogErro = 8;
-            for (int i = pLogErro.Controls.Count - 1; i > 0; i --)
+            for (int i = pLogErro.Controls.Count - 1; i > 0; i--)
                 if (pLogErro.Controls[i] is Label)
                 {
                     var l = pLogErro.Controls[i];
